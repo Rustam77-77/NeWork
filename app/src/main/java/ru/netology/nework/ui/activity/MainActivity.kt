@@ -22,9 +22,13 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Устанавливаем Toolbar как ActionBar
+        setSupportActionBar(binding.toolbar)
+
         val navView: BottomNavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
 
+        // Настраиваем AppBarConfiguration для верхних уровней навигации
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.navigation_posts,
@@ -33,7 +37,15 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
+        // Настраиваем ActionBar с NavController
         setupActionBarWithNavController(navController, appBarConfiguration)
+
+        // Настраиваем BottomNavigationView с NavController
         navView.setupWithNavController(navController)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_activity_main)
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 }
