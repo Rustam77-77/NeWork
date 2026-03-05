@@ -45,6 +45,25 @@
             app:layout_constraintTop_toBottomOf="@id/ivAvatar"
             style="@style/Widget.Material3.Button.TextButton" />
 
+        <!-- TextInputLayout для ошибок аватара (невидимый, используется только для отображения ошибок) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:errorEnabled="true"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/btnSelectAvatar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilLogin"
             android:layout_width="match_parent"
@@ -52,6 +71,7 @@
             android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@id/btnSelectAvatar"
             app:endIconMode="clear_text"
+            app:errorEnabled="true"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -70,6 +90,7 @@
             android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@id/tilLogin"
             app:endIconMode="clear_text"
+            app:errorEnabled="true"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -88,6 +109,7 @@
             android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@id/tilName"
             app:endIconMode="password_toggle"
+            app:errorEnabled="true"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -106,6 +128,7 @@
             android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@id/tilPassword"
             app:endIconMode="password_toggle"
+            app:errorEnabled="true"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -123,6 +146,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="Зарегистрироваться"
+            android:enabled="false"
             app:layout_constraintTop_toBottomOf="@id/tilConfirmPassword"
             style="@style/Widget.Material3.Button" />
 

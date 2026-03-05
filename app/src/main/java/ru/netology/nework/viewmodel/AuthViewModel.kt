@@ -69,12 +69,12 @@ class AuthViewModel @Inject constructor(
             } catch (e: AppError.ApiError) {
                 _authState.value = AuthState.Error
                 _error.value = when (e.code) {
-                    400 -> "Неправильный логин или пароль"
+                    400 -> "Неверный логин или пароль"  // Специальное сообщение для 400
                     else -> "Ошибка сервера: ${e.message}"
                 }
             } catch (e: AppError.NetworkError) {
                 _authState.value = AuthState.Error
-                _error.value = "Ошибка сети. Проверьте подключение"
+                _error.value = "Ошибка сети. Проверьте подключение к интернету"
             } catch (e: Exception) {
                 _authState.value = AuthState.Error
                 _error.value = "Произошла неизвестная ошибка"

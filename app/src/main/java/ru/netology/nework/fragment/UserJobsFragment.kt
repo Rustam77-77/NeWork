@@ -11,13 +11,13 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ru.netology.nework.R
-import ru.netology.nework.databinding.FragmentUserJobsBinding
-import ru.netology.nework.adapter.JobAdapter
-import ru.netology.nework.dto.Job
-import ru.netology.nework.viewmodel.UserJobsViewModel
-import ru.netology.nework.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import ru.netology.nework.R
+import ru.netology.nework.adapter.JobAdapter
+import ru.netology.nework.databinding.FragmentUserJobsBinding
+import ru.netology.nework.dto.Job
+import ru.netology.nework.viewmodel.AuthViewModel
+import ru.netology.nework.viewmodel.UserJobsViewModel
 import java.util.*
 
 @AndroidEntryPoint
@@ -30,8 +30,13 @@ class UserJobsFragment : Fragment() {
     private val authViewModel: AuthViewModel by viewModels()
 
     private lateinit var jobAdapter: JobAdapter
-    private var isCurrentUser = false
     private var userId: Long = 0
+    private var isCurrentUser = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        userId = arguments?.getLong("userId") ?: 0
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,14 +53,6 @@ class UserJobsFragment : Fragment() {
         setupRecyclerView()
         setupListeners()
         setupObservers()
-
-        // Получаем userId из родительского фрагмента или аргументов
-        userId = arguments?.getLong("userId") ?: 0
-        if (userId == 0L) {
-            userId = (parentFragment as? UserDetailFragment)?.arguments?.getSerializable("user")?.let {
-                (it as ru.netology.nework.dto.User).id
-            } ?: 0
-        }
 
         checkIfCurrentUser()
         jobsViewModel.loadUserJobs(userId)
@@ -90,19 +87,19 @@ class UserJobsFragment : Fragment() {
             adapter = jobAdapter
             layoutManager = LinearLayoutManager(requireContext())
         }
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            jobsViewModel.loadUserJobs(userId)
+        }
     }
 
     private fun setupListeners() {
         binding.fabAddJob.setOnClickListener {
-            try {
-                // Пытаемся использовать навигацию с действием
-                findNavController().navigate(R.id.action_userJobsFragment_to_createJobFragment)
-            } catch (e: Exception) {
-                // Если действие не найдено, используем прямой переход
+            if (isCurrentUser) {
                 val bundle = Bundle().apply {
                     putLong("userId", userId)
                 }
-                findNavController().navigate(R.id.createJobFragment, bundle)
+                findNavController().navigate(R.id.action_userJobsFragment_to_createJobFragment, bundle)
             }
         }
     }
@@ -110,10 +107,20 @@ class UserJobsFragment : Fragment() {
     private fun setupObservers() {
         jobsViewModel.jobs.observe(viewLifecycleOwner) { jobs ->
             jobAdapter.submitList(jobs)
+            binding.swipeRefreshLayout.isRefreshing = false
+
             if (jobs.isNullOrEmpty()) {
                 binding.tvEmpty.visibility = View.VISIBLE
             } else {
                 binding.tvEmpty.visibility = View.GONE
+            }
+        }
+
+        jobsViewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            if (isLoading == true && jobsViewModel.jobs.value.isNullOrEmpty()) {
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.progressBar.visibility = View.GONE
             }
         }
 
@@ -191,6 +198,16 @@ class UserJobsFragment : Fragment() {
             }
             .setNegativeButton("Отмена", null)
             .show()
+    }
+
+    companion object {
+        fun newInstance(userId: Long): UserJobsFragment {
+            val fragment = UserJobsFragment()
+            val args = Bundle()
+            args.putLong("userId", userId)
+            fragment.arguments = args
+            return fragment
+        }
     }
 
     override fun onDestroyView() {

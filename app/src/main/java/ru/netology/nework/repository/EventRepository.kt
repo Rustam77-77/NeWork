@@ -30,7 +30,7 @@ class EventRepository @Inject constructor(
                 _events.value = response.body() ?: emptyList()
                 _error.value = null
             } else {
-                _error.value = "Ошибка загрузки: ${response.code()}"
+                _error.value = "Ошибка загрузки событий: ${response.code()}"
             }
         } catch (e: IOException) {
             _error.value = "Ошибка сети. Проверьте подключение к интернету"
@@ -41,26 +41,21 @@ class EventRepository @Inject constructor(
         }
     }
 
-    suspend fun likeEvent(event: Event): Event? {
+    suspend fun likeById(eventId: Long): Event? {
         return try {
-            val response = if (event.likedByMe) {
-                eventsApi.dislikeById(event.id)
-            } else {
-                eventsApi.likeById(event.id)
-            }
-
+            val response = eventsApi.likeById(eventId)
             if (response.isSuccessful) {
-                val updatedEvent = response.body()
-                if (updatedEvent != null) {
-                    updateEventInList(updatedEvent)
+                val event = response.body()
+                if (event != null) {
+                    updateEventInList(event)
                 }
-                updatedEvent
+                event
             } else {
-                _error.value = "Ошибка при ${if (event.likedByMe) "снятии" else "постановке"} лайка: ${response.code()}"
+                _error.value = "Ошибка при лайке: ${response.code()}"
                 null
             }
         } catch (e: IOException) {
-            _error.value = "Ошибка сети при выполнении операции"
+            _error.value = "Ошибка сети при лайке"
             null
         } catch (e: Exception) {
             _error.value = "Неизвестная ошибка: ${e.message}"
@@ -68,11 +63,33 @@ class EventRepository @Inject constructor(
         }
     }
 
-    suspend fun removeEvent(event: Event): Boolean {
+    suspend fun dislikeById(eventId: Long): Event? {
         return try {
-            val response = eventsApi.removeById(event.id)
+            val response = eventsApi.dislikeById(eventId)
             if (response.isSuccessful) {
-                removeEventFromList(event.id)
+                val event = response.body()
+                if (event != null) {
+                    updateEventInList(event)
+                }
+                event
+            } else {
+                _error.value = "Ошибка при снятии лайка: ${response.code()}"
+                null
+            }
+        } catch (e: IOException) {
+            _error.value = "Ошибка сети при снятии лайка"
+            null
+        } catch (e: Exception) {
+            _error.value = "Неизвестная ошибка: ${e.message}"
+            null
+        }
+    }
+
+    suspend fun removeById(eventId: Long): Boolean {
+        return try {
+            val response = eventsApi.removeById(eventId)
+            if (response.isSuccessful) {
+                removeEventFromList(eventId)
                 true
             } else {
                 _error.value = "Ошибка при удалении: ${response.code()}"
@@ -94,7 +111,7 @@ class EventRepository @Inject constructor(
                 val savedEvent = response.body()
                 if (savedEvent != null) {
                     if (event.id == 0L) {
-                        // Новое событие - добавляем в список
+                        // Новое событие - добавляем в начало списка
                         val currentList = _events.value.toMutableList()
                         currentList.add(0, savedEvent)
                         _events.value = currentList
@@ -117,15 +134,15 @@ class EventRepository @Inject constructor(
         }
     }
 
-    suspend fun registerForEvent(event: Event): Event? {
+    suspend fun registerForEvent(eventId: Long): Event? {
         return try {
-            val response = eventsApi.register(event.id)
+            val response = eventsApi.register(eventId)
             if (response.isSuccessful) {
-                val updatedEvent = response.body()
-                if (updatedEvent != null) {
-                    updateEventInList(updatedEvent)
+                val event = response.body()
+                if (event != null) {
+                    updateEventInList(event)
                 }
-                updatedEvent
+                event
             } else {
                 _error.value = "Ошибка при регистрации: ${response.code()}"
                 null
@@ -139,15 +156,15 @@ class EventRepository @Inject constructor(
         }
     }
 
-    suspend fun unregisterFromEvent(event: Event): Event? {
+    suspend fun unregisterFromEvent(eventId: Long): Event? {
         return try {
-            val response = eventsApi.unregister(event.id)
+            val response = eventsApi.unregister(eventId)
             if (response.isSuccessful) {
-                val updatedEvent = response.body()
-                if (updatedEvent != null) {
-                    updateEventInList(updatedEvent)
+                val event = response.body()
+                if (event != null) {
+                    updateEventInList(event)
                 }
-                updatedEvent
+                event
             } else {
                 _error.value = "Ошибка при отмене регистрации: ${response.code()}"
                 null
@@ -161,9 +178,9 @@ class EventRepository @Inject constructor(
         }
     }
 
-    suspend fun getEventById(id: Long): Event? {
+    suspend fun getEventById(eventId: Long): Event? {
         return try {
-            val response = eventsApi.getById(id)
+            val response = eventsApi.getById(eventId)
             if (response.isSuccessful) {
                 response.body()
             } else {
@@ -184,11 +201,6 @@ class EventRepository @Inject constructor(
         val index = currentList.indexOfFirst { it.id == updatedEvent.id }
         if (index != -1) {
             currentList[index] = updatedEvent
-            _events.value = currentList
-        } else {
-            // Если события нет в списке (например, при обновлении с детального экрана)
-            // Добавляем его в начало
-            currentList.add(0, updatedEvent)
             _events.value = currentList
         }
     }

@@ -1,5 +1,6 @@
 package ru.netology.nework.ui.fragment
 
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -31,14 +32,23 @@ class RegisterFragment : Fragment() {
     private val viewModel: AuthViewModel by viewModels()
 
     private var selectedImageUri: Uri? = null
+    private var avatarError: String? = null
 
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
-            selectedImageUri = it
-            binding.ivAvatar.load(it) {
-                crossfade(true)
-                placeholder(R.drawable.ic_avatar_placeholder)
-                error(R.drawable.ic_avatar_placeholder)
+            // Проверяем размер изображения
+            if (validateImageSize(it)) {
+                selectedImageUri = it
+                avatarError = null
+                binding.tilAvatar.error = null
+                binding.ivAvatar.load(it) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_avatar_placeholder)
+                    error(R.drawable.ic_avatar_placeholder)
+                }
+            } else {
+                avatarError = "Изображение должно быть не больше 2048x2048"
+                binding.tilAvatar.error = avatarError
             }
             validateInputs()
         }
@@ -82,6 +92,24 @@ class RegisterFragment : Fragment() {
 
         binding.btnToLogin.setOnClickListener {
             findNavController().navigateUp()
+        }
+    }
+
+    private fun validateImageSize(uri: Uri): Boolean {
+        return try {
+            val inputStream = requireContext().contentResolver.openInputStream(uri)
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            BitmapFactory.decodeStream(inputStream, null, options)
+            inputStream?.close()
+
+            val width = options.outWidth
+            val height = options.outHeight
+
+            width <= 2048 && height <= 2048
+        } catch (e: Exception) {
+            false
         }
     }
 
@@ -150,7 +178,7 @@ class RegisterFragment : Fragment() {
 
         var isValid = true
 
-        // Проверка логина
+        // Проверка логина - непустая строка
         if (login.isBlank()) {
             binding.tilLogin.error = "Логин не может быть пустым"
             isValid = false
@@ -158,7 +186,7 @@ class RegisterFragment : Fragment() {
             binding.tilLogin.error = null
         }
 
-        // Проверка имени
+        // Проверка имени - непустая строка
         if (name.isBlank()) {
             binding.tilName.error = "Имя не может быть пустым"
             isValid = false
@@ -166,7 +194,7 @@ class RegisterFragment : Fragment() {
             binding.tilName.error = null
         }
 
-        // Проверка пароля
+        // Проверка пароля - непустая строка
         if (password.isBlank()) {
             binding.tilPassword.error = "Пароль не может быть пустым"
             isValid = false
@@ -178,14 +206,29 @@ class RegisterFragment : Fragment() {
         }
 
         // Проверка подтверждения пароля
-        if (confirmPassword != password) {
+        if (confirmPassword.isBlank()) {
+            binding.tilConfirmPassword.error = "Подтверждение пароля не может быть пустым"
+            isValid = false
+        } else if (confirmPassword != password) {
             binding.tilConfirmPassword.error = "Пароли не совпадают"
             isValid = false
         } else {
             binding.tilConfirmPassword.error = null
         }
 
+        // Проверка аватара (если выбран)
+        if (selectedImageUri != null) {
+            if (avatarError != null) {
+                binding.tilAvatar.error = avatarError
+                isValid = false
+            } else {
+                binding.tilAvatar.error = null
+            }
+        }
+
+        // Кнопка регистрации активна только если все поля валидны
         binding.btnRegister.isEnabled = isValid
+
         return isValid
     }
 

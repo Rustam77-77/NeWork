@@ -1,5 +1,7 @@
 package ru.netology.nework.ui.fragment
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,41 +12,45 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.net.toUri
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import coil.load
 import ru.netology.nework.R
-import ru.netology.nework.databinding.FragmentCreatePostBinding
-import ru.netology.nework.dto.Post
-import ru.netology.nework.viewmodel.PostViewModel
+import ru.netology.nework.databinding.FragmentCreateEventBinding
+import ru.netology.nework.dto.Event
+import ru.netology.nework.dto.EventType
+import ru.netology.nework.viewmodel.EventViewModel
 import ru.netology.nework.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.io.FileOutputStream
+import java.util.*
 
 @AndroidEntryPoint
-class CreatePostFragment : Fragment() {
+class CreateEventFragment : Fragment() {
 
-    private var _binding: FragmentCreatePostBinding? = null
+    private var _binding: FragmentCreateEventBinding? = null
     private val binding get() = _binding!!
 
-    private val postViewModel: PostViewModel by viewModels()
+    private val eventViewModel: EventViewModel by viewModels()
     private val authViewModel: AuthViewModel by viewModels()
 
     private var selectedImageUri: Uri? = null
     private var selectedAttachmentUri: Uri? = null
     private var attachmentType: String? = null // "image", "video", "audio"
     private var selectedLocation: Pair<Double, Double>? = null
-    private var selectedMentions: List<Long> = emptyList()
+    private var selectedSpeakers: List<Long> = emptyList()
+    private var eventType: EventType = EventType.ONLINE
+    private var selectedDateTime: Date? = null
 
     private val maxFileSize = 15 * 1024 * 1024 // 15 MB в байтах
+
+    private val calendar = Calendar.getInstance()
 
     private val getImageContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
@@ -55,9 +61,8 @@ class CreatePostFragment : Fragment() {
                     crossfade(true)
                     placeholder(R.drawable.ic_image_placeholder)
                 }
-                binding.ivImagePreview.visibility = View.VISIBLE
+                binding.imagePreviewContainer.visibility = View.VISIBLE
                 binding.tvImageSize.text = getFileSizeString(it)
-                binding.tvImageSize.visibility = View.VISIBLE
             } else {
                 Toast.makeText(requireContext(), "Файл слишком большой. Максимальный размер 15 МБ", Toast.LENGTH_LONG).show()
             }
@@ -99,7 +104,7 @@ class CreatePostFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentCreatePostBinding.inflate(inflater, container, false)
+        _binding = FragmentCreateEventBinding.inflate(inflater, container, false)
         setHasOptionsMenu(true)
         return binding.root
     }
@@ -117,50 +122,103 @@ class CreatePostFragment : Fragment() {
 
         setupListeners()
         setupTextValidation()
+        setDefaultDateTime()
+    }
+
+    private fun setDefaultDateTime() {
+        // Устанавливаем дату по умолчанию (текущая + 1 день)
+        calendar.add(Calendar.DAY_OF_MONTH, 1)
+        calendar.set(Calendar.HOUR_OF_DAY, 18)
+        calendar.set(Calendar.MINUTE, 0)
+        selectedDateTime = calendar.time
+        updateDateTimeDisplay()
     }
 
     private fun setupListeners() {
+        // Переключатель типа события
+        binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
+            eventType = when (checkedId) {
+                R.id.rbOnline -> EventType.ONLINE
+                R.id.rbOffline -> EventType.OFFLINE
+                else -> EventType.ONLINE
+            }
+        }
+
+        // Выбор даты и времени
+        binding.btnDateTime.setOnClickListener {
+            showDateTimePicker()
+        }
+
+        // Выбор локации
         binding.btnLocation.setOnClickListener {
-            // Переход к фрагменту с картой
             Toast.makeText(requireContext(), "Выбор локации на карте", Toast.LENGTH_SHORT).show()
             // Здесь будет навигация к фрагменту карты
-            // findNavController().navigate(R.id.action_createPostFragment_to_mapFragment)
+            // findNavController().navigate(R.id.action_createEventFragment_to_mapFragment)
         }
 
-        binding.btnMentions.setOnClickListener {
-            // Переход к выбору упомянутых пользователей
-            Toast.makeText(requireContext(), "Выбор пользователей для упоминания", Toast.LENGTH_SHORT).show()
+        // Выбор спикеров
+        binding.btnSpeakers.setOnClickListener {
+            Toast.makeText(requireContext(), "Выбор спикеров", Toast.LENGTH_SHORT).show()
             // Здесь будет навигация к фрагменту выбора пользователей
-            // findNavController().navigate(R.id.action_createPostFragment_to_mentionsFragment)
+            // findNavController().navigate(R.id.action_createEventFragment_to_speakersFragment)
         }
 
+        // Выбор изображения
         binding.btnImage.setOnClickListener {
             getImageContent.launch("image/*")
         }
 
+        // Выбор видео
         binding.btnVideo.setOnClickListener {
             getVideoContent.launch("video/*")
         }
 
+        // Выбор аудио
         binding.btnAudio.setOnClickListener {
             getAudioContent.launch("audio/*")
         }
 
+        // Удаление изображения
         binding.btnRemoveImage.setOnClickListener {
             selectedImageUri = null
-            binding.ivImagePreview.visibility = View.GONE
-            binding.tvImageSize.visibility = View.GONE
+            binding.imagePreviewContainer.visibility = View.GONE
         }
 
+        // Удаление вложения
         binding.btnRemoveAttachment.setOnClickListener {
             selectedAttachmentUri = null
             attachmentType = null
             binding.attachmentContainer.visibility = View.GONE
         }
 
+        // Удаление локации
         binding.btnRemoveLocation.setOnClickListener {
             selectedLocation = null
             binding.locationContainer.visibility = View.GONE
+        }
+    }
+
+    private fun showDateTimePicker() {
+        val currentDate = calendar
+
+        DatePickerDialog(requireContext(), { _, year, month, dayOfMonth ->
+            calendar.set(year, month, dayOfMonth)
+
+            TimePickerDialog(requireContext(), { _, hourOfDay, minute ->
+                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                calendar.set(Calendar.MINUTE, minute)
+                selectedDateTime = calendar.time
+                updateDateTimeDisplay()
+            }, currentDate.get(Calendar.HOUR_OF_DAY), currentDate.get(Calendar.MINUTE), true).show()
+
+        }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DAY_OF_MONTH)).show()
+    }
+
+    private fun updateDateTimeDisplay() {
+        selectedDateTime?.let { date ->
+            val dateFormat = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+            binding.tvDateTime.text = dateFormat.format(date)
+            binding.tvDateTime.visibility = View.VISIBLE
         }
     }
 
@@ -171,12 +229,11 @@ class CreatePostFragment : Fragment() {
     }
 
     private fun updateSaveButtonState() {
-        // Кнопка сохранения активна, если есть текст
         activity?.invalidateOptionsMenu()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.create_post_menu, menu)
+        inflater.inflate(R.menu.create_event_menu, menu)
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -189,7 +246,7 @@ class CreatePostFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_save -> {
-                savePost()
+                saveEvent()
                 true
             }
             android.R.id.home -> {
@@ -200,16 +257,21 @@ class CreatePostFragment : Fragment() {
         }
     }
 
-    private fun savePost() {
+    private fun saveEvent() {
         val content = binding.etContent.text.toString()
 
         if (content.isBlank()) {
-            Toast.makeText(requireContext(), "Введите текст поста", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Введите описание события", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // TODO: Создание поста с вложениями, упоминаниями и локацией
-        Toast.makeText(requireContext(), "Пост создан", Toast.LENGTH_SHORT).show()
+        if (selectedDateTime == null) {
+            Toast.makeText(requireContext(), "Выберите дату проведения", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // TODO: Создание события с вложениями, спикерами и локацией
+        Toast.makeText(requireContext(), "Событие создано", Toast.LENGTH_SHORT).show()
         findNavController().navigateUp()
     }
 

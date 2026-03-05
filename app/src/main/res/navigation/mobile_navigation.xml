@@ -159,6 +159,10 @@
             android:id="@+id/action_userDetailFragment_to_userWallFragment"
             app:destination="@id/userWallFragment" />
 
+        <action
+            android:id="@+id/action_userDetailFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+
     </fragment>
 
     <!-- Фрагмент стены пользователя -->
@@ -166,7 +170,21 @@
         android:id="@+id/userWallFragment"
         android:name="ru.netology.nework.ui.fragment.UserWallFragment"
         android:label="Стена пользователя"
-        tools:layout="@layout/fragment_user_wall" />
+        tools:layout="@layout/fragment_user_wall">
+
+        <argument
+            android:name="userId"
+            app:argType="long" />
+
+        <action
+            android:id="@+id/action_userWallFragment_to_postDetailFragment"
+            app:destination="@id/postDetailFragment" />
+
+        <action
+            android:id="@+id/action_userWallFragment_to_editPostFragment"
+            app:destination="@id/editPostFragment" />
+
+    </fragment>
 
     <!-- Фрагмент работ пользователя -->
     <fragment
@@ -174,6 +192,10 @@
         android:name="ru.netology.nework.ui.fragment.UserJobsFragment"
         android:label="Работы пользователя"
         tools:layout="@layout/fragment_user_jobs">
+
+        <argument
+            android:name="userId"
+            app:argType="long" />
 
         <action
             android:id="@+id/action_userJobsFragment_to_createJobFragment"
@@ -198,6 +220,10 @@
             android:id="@+id/action_myProfileFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
 
+        <action
+            android:id="@+id/action_myProfileFragment_to_createJobFragment"
+            app:destination="@id/createJobFragment" />
+
     </fragment>
 
     <!-- Фрагмент создания поста -->
@@ -205,7 +231,17 @@
         android:id="@+id/createPostFragment"
         android:name="ru.netology.nework.ui.fragment.CreatePostFragment"
         android:label="Создать пост"
-        tools:layout="@layout/fragment_create_post" />
+        tools:layout="@layout/fragment_create_post">
+
+        <action
+            android:id="@+id/action_createPostFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+
+        <action
+            android:id="@+id/action_createPostFragment_to_mentionsFragment"
+            app:destination="@id/mentionsFragment" />
+
+    </fragment>
 
     <!-- Фрагмент редактирования поста -->
     <fragment
@@ -225,7 +261,17 @@
         android:id="@+id/createEventFragment"
         android:name="ru.netology.nework.ui.fragment.CreateEventFragment"
         android:label="Создать событие"
-        tools:layout="@layout/fragment_create_event" />
+        tools:layout="@layout/fragment_create_event">
+
+        <action
+            android:id="@+id/action_createEventFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+
+        <action
+            android:id="@+id/action_createEventFragment_to_speakersFragment"
+            app:destination="@id/speakersFragment" />
+
+    </fragment>
 
     <!-- Фрагмент редактирования события -->
     <fragment
@@ -252,6 +298,34 @@
         android:id="@+id/createJobFragment"
         android:name="ru.netology.nework.ui.fragment.CreateJobFragment"
         android:label="Добавить работу"
-        tools:layout="@layout/fragment_create_job" />
+        tools:layout="@layout/fragment_create_job">
+
+        <argument
+            android:name="userId"
+            app:argType="long"
+            android:defaultValue="0L" />
+
+    </fragment>
+
+    <!-- Фрагмент карты -->
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="ru.netology.nework.ui.fragment.MapFragment"
+        android:label="Выбрать локацию"
+        tools:layout="@layout/fragment_map" />
+
+    <!-- Фрагмент выбора упоминаний -->
+    <fragment
+        android:id="@+id/mentionsFragment"
+        android:name="ru.netology.nework.ui.fragment.MentionsFragment"
+        android:label="Упомянуть пользователей"
+        tools:layout="@layout/fragment_mentions" />
+
+    <!-- Фрагмент выбора спикеров -->
+    <fragment
+        android:id="@+id/speakersFragment"
+        android:name="ru.netology.nework.ui.fragment.SpeakersFragment"
+        android:label="Выбрать спикеров"
+        tools:layout="@layout/fragment_speakers" />
 
 </navigation>

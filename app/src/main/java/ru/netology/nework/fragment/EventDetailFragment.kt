@@ -39,16 +39,15 @@ class EventDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ИСПРАВЛЕНО: безопасное получение Serializable с учетом версий API
-        val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        // Получаем событие из аргументов
+        currentEvent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             arguments?.getSerializable("event", Event::class.java)
         } else {
             @Suppress("DEPRECATION")
             arguments?.getSerializable("event") as? Event
         }
 
-        currentEvent = event
-        event?.let { displayEvent(it) }
+        currentEvent?.let { displayEvent(it) }
 
         setupListeners()
     }
@@ -196,9 +195,11 @@ class EventDetailFragment : Fragment() {
                             if (userId != null) {
                                 val isParticipant = event.participantIds.contains(userId)
                                 if (isParticipant) {
-                                    eventViewModel.unregisterFromEvent(event)
+                                    // ИСПРАВЛЕНО: передаем ID события
+                                    eventViewModel.unregisterFromEvent(event.id)
                                 } else {
-                                    eventViewModel.registerForEvent(event)
+                                    // ИСПРАВЛЕНО: передаем ID события
+                                    eventViewModel.registerForEvent(event.id)
                                 }
                             }
                         }
@@ -209,7 +210,6 @@ class EventDetailFragment : Fragment() {
             }
         }
 
-        // ИСПРАВЛЕНО: использование onBackPressedDispatcher вместо deprecated onBackPressed
         binding.btnBack.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }

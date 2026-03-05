@@ -7,16 +7,15 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import ru.netology.nework.databinding.FragmentEventsBinding
-import ru.netology.nework.adapter.EventAdapter
-import ru.netology.nework.dto.Event
-import ru.netology.nework.viewmodel.EventViewModel
-import ru.netology.nework.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
+import ru.netology.nework.R
+import ru.netology.nework.adapter.EventAdapter
+import ru.netology.nework.databinding.FragmentEventsBinding
+import ru.netology.nework.dto.Event
+import ru.netology.nework.viewmodel.AuthViewModel
+import ru.netology.nework.viewmodel.EventViewModel
 
 @AndroidEntryPoint
 class EventsFragment : Fragment() {
@@ -53,7 +52,8 @@ class EventsFragment : Fragment() {
             onLikeClickListener = { event ->
                 authViewModel.isAuthenticated.observe(viewLifecycleOwner) { isAuth ->
                     if (isAuth == true) {
-                        eventViewModel.likeEvent(event)
+                        // ИСПРАВЛЕНО: передаем ID события и состояние лайка
+                        eventViewModel.likeEvent(event.id, !event.likedByMe)
                     } else {
                         showAuthDialog()
                     }
@@ -127,7 +127,7 @@ class EventsFragment : Fragment() {
             .setTitle("Требуется авторизация")
             .setMessage("Для этого действия необходимо войти в приложение")
             .setPositiveButton("Войти") { _, _ ->
-                findNavController().navigate(ru.netology.nework.R.id.action_eventsFragment_to_loginFragment)
+                findNavController().navigate(R.id.action_eventsFragment_to_loginFragment)
             }
             .setNegativeButton("Отмена", null)
             .show()
@@ -151,7 +151,8 @@ class EventsFragment : Fragment() {
             .setTitle("Удаление события")
             .setMessage("Вы уверены, что хотите удалить это событие?")
             .setPositiveButton("Удалить") { _, _ ->
-                eventViewModel.removeEvent(event)
+                // ИСПРАВЛЕНО: передаем ID события
+                eventViewModel.removeEvent(event.id)
             }
             .setNegativeButton("Отмена", null)
             .show()
@@ -161,18 +162,18 @@ class EventsFragment : Fragment() {
         val bundle = Bundle().apply {
             putSerializable("event", event)
         }
-        findNavController().navigate(ru.netology.nework.R.id.action_eventsFragment_to_eventDetailFragment, bundle)
+        findNavController().navigate(R.id.action_eventsFragment_to_eventDetailFragment, bundle)
     }
 
     private fun openCreateEvent() {
-        findNavController().navigate(ru.netology.nework.R.id.action_eventsFragment_to_createEventFragment)
+        findNavController().navigate(R.id.action_eventsFragment_to_createEventFragment)
     }
 
     private fun openEditEvent(event: Event) {
         val bundle = Bundle().apply {
             putSerializable("event", event)
         }
-        findNavController().navigate(ru.netology.nework.R.id.action_eventsFragment_to_editEventFragment, bundle)
+        findNavController().navigate(R.id.action_eventsFragment_to_editEventFragment, bundle)
     }
 
     override fun onDestroyView() {

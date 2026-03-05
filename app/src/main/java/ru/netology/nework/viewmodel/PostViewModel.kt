@@ -4,10 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ru.netology.nework.dto.Post
-import ru.netology.nework.repository.PostRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import ru.netology.nework.dto.Post
+import ru.netology.nework.repository.PostRepository
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,6 +17,9 @@ class PostViewModel @Inject constructor(
 
     private val _posts = MutableLiveData<List<Post>>()
     val posts: LiveData<List<Post>> = _posts
+
+    private val _selectedPost = MutableLiveData<Post?>()
+    val selectedPost: LiveData<Post?> = _selectedPost
 
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> = _loading
@@ -50,15 +53,53 @@ class PostViewModel @Inject constructor(
         }
     }
 
-    fun likePost(post: Post) {
+    fun getPostById(postId: Long) {
         viewModelScope.launch {
-            postRepository.likePost(post)
+            _loading.value = true
+            try {
+                val post = postRepository.getPostById(postId)
+                _selectedPost.postValue(post)
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = "Ошибка загрузки поста: ${e.message}"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 
-    fun removePost(post: Post) {
+    fun likePost(postId: Long, likedByMe: Boolean) {
         viewModelScope.launch {
-            postRepository.removePost(post)
+            val updatedPost = if (likedByMe) {
+                postRepository.likeById(postId)
+            } else {
+                postRepository.dislikeById(postId)
+            }
+
+            if (updatedPost != null) {
+                // Обновляем выбранный пост, если это он
+                if (_selectedPost.value?.id == postId) {
+                    _selectedPost.postValue(updatedPost)
+                }
+            }
+        }
+    }
+
+    fun removePost(postId: Long) {
+        viewModelScope.launch {
+            val success = postRepository.removeById(postId)
+            if (success) {
+                loadPosts() // Перезагружаем список после удаления
+            }
+        }
+    }
+
+    fun savePost(post: Post) {
+        viewModelScope.launch {
+            val savedPost = postRepository.savePost(post)
+            if (savedPost != null) {
+                loadPosts() // Перезагружаем список после сохранения
+            }
         }
     }
 

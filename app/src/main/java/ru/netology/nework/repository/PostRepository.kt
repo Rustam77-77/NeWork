@@ -2,7 +2,6 @@ package ru.netology.nework.repository
 
 import ru.netology.nework.api.PostsApi
 import ru.netology.nework.dto.Post
-import ru.netology.nework.error.AppError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,7 +33,7 @@ class PostRepository @Inject constructor(
                 _error.value = "Ошибка загрузки: ${response.code()}"
             }
         } catch (e: IOException) {
-            _error.value = "Ошибка сети"
+            _error.value = "Ошибка сети. Проверьте подключение к интернету"
         } catch (e: Exception) {
             _error.value = "Неизвестная ошибка: ${e.message}"
         } finally {
@@ -42,39 +41,114 @@ class PostRepository @Inject constructor(
         }
     }
 
-    suspend fun likePost(post: Post): Post? {
+    suspend fun likeById(postId: Long): Post? {
         return try {
-            val response = if (post.likedByMe) {
-                postsApi.dislikeById(post.id)
-            } else {
-                postsApi.likeById(post.id)
-            }
-
+            val response = postsApi.likeById(postId)
             if (response.isSuccessful) {
-                val updatedPost = response.body()
-                if (updatedPost != null) {
-                    updatePostInList(updatedPost)
+                val post = response.body()
+                if (post != null) {
+                    updatePostInList(post)
                 }
-                updatedPost
+                post
             } else {
+                _error.value = "Ошибка при лайке: ${response.code()}"
                 null
             }
         } catch (e: IOException) {
+            _error.value = "Ошибка сети при лайке"
+            null
+        } catch (e: Exception) {
+            _error.value = "Неизвестная ошибка: ${e.message}"
             null
         }
     }
 
-    suspend fun removePost(post: Post): Boolean {
+    suspend fun dislikeById(postId: Long): Post? {
         return try {
-            val response = postsApi.removeById(post.id)
+            val response = postsApi.dislikeById(postId)
             if (response.isSuccessful) {
-                removePostFromList(post.id)
+                val post = response.body()
+                if (post != null) {
+                    updatePostInList(post)
+                }
+                post
+            } else {
+                _error.value = "Ошибка при снятии лайка: ${response.code()}"
+                null
+            }
+        } catch (e: IOException) {
+            _error.value = "Ошибка сети при снятии лайка"
+            null
+        } catch (e: Exception) {
+            _error.value = "Неизвестная ошибка: ${e.message}"
+            null
+        }
+    }
+
+    suspend fun removeById(postId: Long): Boolean {
+        return try {
+            val response = postsApi.removeById(postId)
+            if (response.isSuccessful) {
+                removePostFromList(postId)
                 true
             } else {
+                _error.value = "Ошибка при удалении: ${response.code()}"
                 false
             }
         } catch (e: IOException) {
+            _error.value = "Ошибка сети при удалении"
             false
+        } catch (e: Exception) {
+            _error.value = "Неизвестная ошибка: ${e.message}"
+            false
+        }
+    }
+
+    suspend fun savePost(post: Post): Post? {
+        return try {
+            val response = postsApi.save(post)
+            if (response.isSuccessful) {
+                val savedPost = response.body()
+                if (savedPost != null) {
+                    if (post.id == 0L) {
+                        // Новый пост - добавляем в начало списка
+                        val currentList = _posts.value.toMutableList()
+                        currentList.add(0, savedPost)
+                        _posts.value = currentList
+                    } else {
+                        // Обновление существующего поста
+                        updatePostInList(savedPost)
+                    }
+                }
+                savedPost
+            } else {
+                _error.value = "Ошибка при сохранении: ${response.code()}"
+                null
+            }
+        } catch (e: IOException) {
+            _error.value = "Ошибка сети при сохранении"
+            null
+        } catch (e: Exception) {
+            _error.value = "Неизвестная ошибка: ${e.message}"
+            null
+        }
+    }
+
+    suspend fun getPostById(postId: Long): Post? {
+        return try {
+            val response = postsApi.getById(postId)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                _error.value = "Ошибка при загрузке поста: ${response.code()}"
+                null
+            }
+        } catch (e: IOException) {
+            _error.value = "Ошибка сети при загрузке поста"
+            null
+        } catch (e: Exception) {
+            _error.value = "Неизвестная ошибка: ${e.message}"
+            null
         }
     }
 
@@ -91,5 +165,9 @@ class PostRepository @Inject constructor(
         val currentList = _posts.value.toMutableList()
         currentList.removeAll { it.id == postId }
         _posts.value = currentList
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 }
