@@ -76,9 +76,5 @@ app/debug/
 app/build/
 app/*.iml
 
-# Firebase
+# Firebase (если не используется)
 google-services.json
-*.json
-
-# Environment variables
-.env

@@ -1,5 +1,6 @@
 package ru.netology.nework.ui.fragment
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -29,7 +30,14 @@ class PostDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val post = arguments?.getSerializable("post") as? Post
+        // ИСПРАВЛЕНО: безопасное получение Serializable с учетом версий API
+        val post = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getSerializable("post", Post::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            arguments?.getSerializable("post") as? Post
+        }
+
         post?.let { displayPost(it) }
     }
 

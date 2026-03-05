@@ -1,5 +1,6 @@
 package ru.netology.nework.ui.fragment
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -38,7 +39,14 @@ class EventDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val event = arguments?.getSerializable("event") as? Event
+        // ИСПРАВЛЕНО: безопасное получение Serializable с учетом версий API
+        val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getSerializable("event", Event::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            arguments?.getSerializable("event") as? Event
+        }
+
         currentEvent = event
         event?.let { displayEvent(it) }
 
@@ -201,8 +209,9 @@ class EventDetailFragment : Fragment() {
             }
         }
 
+        // ИСПРАВЛЕНО: использование onBackPressedDispatcher вместо deprecated onBackPressed
         binding.btnBack.setOnClickListener {
-            requireActivity().onBackPressed()
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
     }
 

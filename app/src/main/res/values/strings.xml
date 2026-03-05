@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">NeWork</string>
+    <string name="notification_channel_id">posts_channel</string>
 </resources>

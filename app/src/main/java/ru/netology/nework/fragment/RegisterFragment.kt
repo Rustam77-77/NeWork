@@ -10,16 +10,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import coil.load
+import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentRegisterBinding
 import ru.netology.nework.viewmodel.AuthViewModel
-import coil.load
 import dagger.hilt.android.AndroidEntryPoint
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import ru.netology.nework.R
 import java.io.File
 import java.io.FileOutputStream
 
@@ -36,7 +35,7 @@ class RegisterFragment : Fragment() {
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             selectedImageUri = it
-            binding.imageViewAvatar.load(it) {
+            binding.ivAvatar.load(it) {
                 crossfade(true)
                 placeholder(R.drawable.ic_avatar_placeholder)
                 error(R.drawable.ic_avatar_placeholder)
@@ -63,15 +62,14 @@ class RegisterFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        binding.buttonSelectAvatar.setOnClickListener {
+        binding.btnSelectAvatar.setOnClickListener {
             getContent.launch("image/*")
         }
 
-        binding.buttonRegister.setOnClickListener {
-            val login = binding.editTextLogin.text.toString()
-            val password = binding.editTextPassword.text.toString()
-            val confirmPassword = binding.editTextConfirmPassword.text.toString()
-            val name = binding.editTextName.text.toString()
+        binding.btnRegister.setOnClickListener {
+            val login = binding.etLogin.text.toString()
+            val password = binding.etPassword.text.toString()
+            val name = binding.etName.text.toString()
 
             if (validateInputs()) {
                 if (selectedImageUri != null) {
@@ -82,7 +80,7 @@ class RegisterFragment : Fragment() {
             }
         }
 
-        binding.buttonToLogin.setOnClickListener {
+        binding.btnToLogin.setOnClickListener {
             findNavController().navigateUp()
         }
     }
@@ -112,21 +110,19 @@ class RegisterFragment : Fragment() {
             when (state) {
                 is AuthViewModel.AuthState.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE
-                    binding.buttonRegister.isEnabled = false
+                    binding.btnRegister.isEnabled = false
                 }
                 is AuthViewModel.AuthState.Success -> {
                     binding.progressBar.visibility = View.GONE
-                    findNavController().navigate(
-                        R.id.action_registerFragment_to_mainFragment
-                    )
+                    findNavController().navigate(R.id.action_registerFragment_to_mainFragment)
                 }
                 is AuthViewModel.AuthState.Error -> {
                     binding.progressBar.visibility = View.GONE
-                    binding.buttonRegister.isEnabled = true
+                    binding.btnRegister.isEnabled = true
                 }
                 else -> {
                     binding.progressBar.visibility = View.GONE
-                    binding.buttonRegister.isEnabled = true
+                    binding.btnRegister.isEnabled = true
                 }
             }
         }
@@ -140,56 +136,56 @@ class RegisterFragment : Fragment() {
     }
 
     private fun setupValidation() {
-        binding.editTextLogin.addTextChangedListener { validateInputs() }
-        binding.editTextPassword.addTextChangedListener { validateInputs() }
-        binding.editTextConfirmPassword.addTextChangedListener { validateInputs() }
-        binding.editTextName.addTextChangedListener { validateInputs() }
+        binding.etLogin.addTextChangedListener { validateInputs() }
+        binding.etPassword.addTextChangedListener { validateInputs() }
+        binding.etConfirmPassword.addTextChangedListener { validateInputs() }
+        binding.etName.addTextChangedListener { validateInputs() }
     }
 
     private fun validateInputs(): Boolean {
-        val login = binding.editTextLogin.text.toString()
-        val password = binding.editTextPassword.text.toString()
-        val confirmPassword = binding.editTextConfirmPassword.text.toString()
-        val name = binding.editTextName.text.toString()
+        val login = binding.etLogin.text.toString()
+        val password = binding.etPassword.text.toString()
+        val confirmPassword = binding.etConfirmPassword.text.toString()
+        val name = binding.etName.text.toString()
 
         var isValid = true
 
         // Проверка логина
         if (login.isBlank()) {
-            binding.textInputLayoutLogin.error = "Логин не может быть пустым"
+            binding.tilLogin.error = "Логин не может быть пустым"
             isValid = false
         } else {
-            binding.textInputLayoutLogin.error = null
+            binding.tilLogin.error = null
         }
 
         // Проверка имени
         if (name.isBlank()) {
-            binding.textInputLayoutName.error = "Имя не может быть пустым"
+            binding.tilName.error = "Имя не может быть пустым"
             isValid = false
         } else {
-            binding.textInputLayoutName.error = null
+            binding.tilName.error = null
         }
 
         // Проверка пароля
         if (password.isBlank()) {
-            binding.textInputLayoutPassword.error = "Пароль не может быть пустым"
+            binding.tilPassword.error = "Пароль не может быть пустым"
             isValid = false
         } else if (password.length < 6) {
-            binding.textInputLayoutPassword.error = "Пароль должен содержать минимум 6 символов"
+            binding.tilPassword.error = "Пароль должен содержать минимум 6 символов"
             isValid = false
         } else {
-            binding.textInputLayoutPassword.error = null
+            binding.tilPassword.error = null
         }
 
         // Проверка подтверждения пароля
         if (confirmPassword != password) {
-            binding.textInputLayoutConfirmPassword.error = "Пароли не совпадают"
+            binding.tilConfirmPassword.error = "Пароли не совпадают"
             isValid = false
         } else {
-            binding.textInputLayoutConfirmPassword.error = null
+            binding.tilConfirmPassword.error = null
         }
 
-        binding.buttonRegister.isEnabled = isValid
+        binding.btnRegister.isEnabled = isValid
         return isValid
     }
 
