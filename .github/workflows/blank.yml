@@ -1,0 +1,47 @@
+name: Build NeWork
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+    
+    - name: Create gradle.properties with API key
+      run: |
+        echo "API_KEY=${{ secrets.API_KEY }}" > gradle.properties
+        echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8" >> gradle.properties
+        echo "android.useAndroidX=true" >> gradle.properties
+        echo "kotlin.code.style=official" >> gradle.properties
+        echo "android.overridePathCheck=true" >> gradle.properties
+    
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    
+    - name: Build with Gradle
+      run: ./gradlew assembleDebug -x lint
+    
+    - name: Run tests
+      run: ./gradlew test
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug
+        path: app/build/outputs/apk/debug/app-debug.apk
