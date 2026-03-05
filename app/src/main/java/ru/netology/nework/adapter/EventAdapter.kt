@@ -1,7 +1,9 @@
 package ru.netology.nework.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.view.animation.ScaleAnimation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -9,8 +11,8 @@ import coil.load
 import ru.netology.nework.R
 import ru.netology.nework.databinding.ItemEventBinding
 import ru.netology.nework.dto.Event
-import java.text.SimpleDateFormat
-import java.util.Locale
+import ru.netology.nework.dto.EventType
+import ru.netology.nework.utils.DateFormatter
 
 class EventAdapter(
     private val onLikeClickListener: (Event) -> Unit,
@@ -37,7 +39,7 @@ class EventAdapter(
 
         fun bind(event: Event) {
             binding.apply {
-                // Загрузка аватара
+                // Аватар
                 if (!event.authorAvatar.isNullOrBlank()) {
                     avatarImageView.load(event.authorAvatar) {
                         crossfade(true)
@@ -52,30 +54,24 @@ class EventAdapter(
                 authorNameTextView.text = event.author
 
                 // Дата публикации
-                try {
-                    val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-                    publishedTextView.text = dateFormat.format(
-                        java.time.Instant.parse(event.published).toEpochMilli()
-                    )
-                } catch (e: Exception) {
-                    publishedTextView.text = event.published
-                }
+                publishedTextView.text = DateFormatter.formatDate(event.published)
 
                 // Дата проведения
-                try {
-                    val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-                    datetimeTextView.text = "Дата: ${dateFormat.format(
-                        java.time.Instant.parse(event.datetime).toEpochMilli()
-                    )}"
-                } catch (e: Exception) {
-                    datetimeTextView.text = "Дата: ${event.datetime}"
+                datetimeTextView.text = DateFormatter.formatEventDate(event.datetime)
+
+                // Тип события с иконкой
+                when (event.type) {
+                    EventType.OFFLINE -> {
+                        typeIconImageView.setImageResource(R.drawable.ic_location)
+                        typeTextView.text = "Офлайн"
+                    }
+                    EventType.ONLINE -> {
+                        typeIconImageView.setImageResource(R.drawable.ic_online)
+                        typeTextView.text = "Онлайн"
+                    }
                 }
 
-                // Тип события
-                typeTextView.text = if (event.type == ru.netology.nework.dto.EventType.OFFLINE)
-                    "📍 Офлайн" else "🌐 Онлайн"
-
-                // Текст события
+                // Текст
                 contentTextView.text = event.content
 
                 // Лайки
@@ -85,8 +81,9 @@ class EventAdapter(
                     else R.drawable.ic_like_outline
                 )
 
-                // Обработчики кликов
+                // Обработчики
                 likeImageView.setOnClickListener {
+                    animateLike()
                     onLikeClickListener(event)
                 }
 
@@ -98,30 +95,33 @@ class EventAdapter(
                     onItemClickListener(event)
                 }
 
-                // Отображение вложения
+                // Вложение
                 if (event.attachment != null) {
-                    attachmentImageView.visibility = ViewGroup.VISIBLE
+                    attachmentContainer.visibility = View.VISIBLE
                     when (event.attachment.type) {
                         ru.netology.nework.dto.AttachmentType.IMAGE -> {
+                            attachmentTypeIcon.setImageResource(R.drawable.ic_image)
                             attachmentImageView.load(event.attachment.url) {
                                 crossfade(true)
                                 placeholder(R.drawable.ic_image_placeholder)
                             }
                         }
                         ru.netology.nework.dto.AttachmentType.VIDEO -> {
-                            attachmentImageView.setImageResource(R.drawable.ic_video)
+                            attachmentTypeIcon.setImageResource(R.drawable.ic_video)
+                            attachmentImageView.setImageResource(R.drawable.video_placeholder)
                         }
                         ru.netology.nework.dto.AttachmentType.AUDIO -> {
-                            attachmentImageView.setImageResource(R.drawable.ic_audio)
+                            attachmentTypeIcon.setImageResource(R.drawable.ic_audio)
+                            attachmentImageView.setImageResource(R.drawable.audio_placeholder)
                         }
                     }
                 } else {
-                    attachmentImageView.visibility = ViewGroup.GONE
+                    attachmentContainer.visibility = View.GONE
                 }
 
                 // Ссылка
                 if (!event.link.isNullOrBlank()) {
-                    linkTextView.visibility = ViewGroup.VISIBLE
+                    linkContainer.visibility = View.VISIBLE
                     linkTextView.text = event.link
                     linkTextView.setOnClickListener {
                         val intent = android.content.Intent(
@@ -131,9 +131,31 @@ class EventAdapter(
                         root.context.startActivity(intent)
                     }
                 } else {
-                    linkTextView.visibility = ViewGroup.GONE
+                    linkContainer.visibility = View.GONE
                 }
             }
+        }
+
+        private fun animateLike() {
+            val scaleAnimation = ScaleAnimation(
+                1f, 1.3f, 1f, 1.3f,
+                binding.likeImageView.width / 2f,
+                binding.likeImageView.height / 2f
+            )
+            scaleAnimation.duration = 150
+            binding.likeImageView.startAnimation(scaleAnimation)
+
+            binding.likesCountTextView.animate()
+                .scaleX(1.2f)
+                .scaleY(1.2f)
+                .setDuration(150)
+                .withEndAction {
+                    binding.likesCountTextView.animate()
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(150)
+                        .start()
+                }.start()
         }
     }
 

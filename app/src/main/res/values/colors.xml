@@ -6,4 +6,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Добавленные цвета -->
+    <color name="primary_color">#FF2196F3</color>
+    <color name="primary_dark">#FF1976D2</color>
+    <color name="accent_color">#FF4CAF50</color>
+    <color name="gray_light">#FFF5F5F5</color>
+    <color name="gray_medium">#FFE0E0E0</color>
+    <color name="gray_dark">#FF9E9E9E</color>
 </resources>

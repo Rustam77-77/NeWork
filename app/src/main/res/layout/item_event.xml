@@ -6,13 +6,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    android:elevation="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:padding="16dp">
 
         <!-- Аватар автора -->
         <ImageView
@@ -30,9 +32,11 @@
             android:id="@+id/authorNameTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="@android:color/black"
             app:layout_constraintEnd_toStartOf="@id/menuImageView"
             app:layout_constraintStart_toEndOf="@id/avatarImageView"
             app:layout_constraintTop_toTopOf="@id/avatarImageView"
@@ -48,92 +52,149 @@
             app:layout_constraintEnd_toEndOf="@id/authorNameTextView"
             app:layout_constraintStart_toStartOf="@id/authorNameTextView"
             app:layout_constraintTop_toBottomOf="@id/authorNameTextView"
-            tools:text="01.01.2024 12:00" />
+            tools:text="15.03.2024 14:30" />
 
         <!-- Кнопка меню -->
         <ImageView
             android:id="@+id/menuImageView"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_more"
+            android:src="@drawable/ic_menu"
             android:padding="4dp"
+            android:background="?selectableItemBackgroundBorderless"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Тип события -->
-        <TextView
-            android:id="@+id/typeTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="12sp"
-            android:textColor="@android:color/holo_blue_dark"
-            app:layout_constraintStart_toStartOf="@id/avatarImageView"
-            app:layout_constraintTop_toBottomOf="@id/avatarImageView"
-            tools:text="📍 Офлайн" />
-
-        <!-- Дата проведения -->
-        <TextView
-            android:id="@+id/datetimeTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:textSize="12sp"
-            android:textColor="@android:color/holo_orange_dark"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/typeTextView"
-            app:layout_constraintTop_toTopOf="@id/typeTextView"
-            tools:text="Дата: 15.01.2024 18:00" />
-
-        <!-- Текст события -->
-        <TextView
-            android:id="@+id/contentTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/typeTextView"
-            tools:text="Содержание события" />
-
-        <!-- Вложение -->
-        <ImageView
-            android:id="@+id/attachmentImageView"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="8dp"
-            android:scaleType="centerCrop"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/contentTextView"
-            tools:src="@android:drawable/ic_menu_gallery"
-            tools:visibility="visible" />
-
-        <!-- Ссылка -->
-        <TextView
-            android:id="@+id/linkTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@android:color/holo_blue_dark"
-            android:textSize="14sp"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/attachmentImageView"
-            tools:text="https://example.com"
-            tools:visibility="visible" />
-
-        <!-- Лайки -->
+        <!-- Тип события и дата проведения -->
         <LinearLayout
-            android:id="@+id/likeLayout"
+            android:id="@+id/typeContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/linkTextView">
+            app:layout_constraintTop_toBottomOf="@id/avatarImageView">
+
+            <ImageView
+                android:id="@+id/typeIconImageView"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_location" />
+
+            <TextView
+                android:id="@+id/typeTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/primary_color"
+                tools:text="Офлайн" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/datetimeTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="12sp"
+            android:textColor="@color/accent_color"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/typeContainer"
+            app:layout_constraintTop_toTopOf="@id/typeContainer"
+            app:layout_constraintBottom_toBottomOf="@id/typeContainer"
+            tools:text="15.04.2024 18:00" />
+
+        <!-- Текст события -->
+        <TextView
+            android:id="@+id/contentTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:lineSpacingExtra="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/typeContainer"
+            tools:text="Встреча разработчиков Android. Обсуждение новых технологий и обмен опытом. Приглашаются все желающие." />
+
+        <!-- Контейнер для вложения -->
+        <FrameLayout
+            android:id="@+id/attachmentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/contentTextView"
+            tools:visibility="visible">
+
+            <ImageView
+                android:id="@+id/attachmentImageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_image_placeholder" />
+
+            <ImageView
+                android:id="@+id/attachmentTypeIcon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle_background_semi_transparent"
+                android:padding="12dp"
+                android:src="@drawable/ic_image" />
+
+        </FrameLayout>
+
+        <!-- Контейнер для ссылки -->
+        <LinearLayout
+            android:id="@+id/linkContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/link_background"
+            android:padding="12dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/attachmentContainer"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_link"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/linkTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/primary_color"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="https://example.com/event" />
+
+        </LinearLayout>
+
+        <!-- Лайки -->
+        <LinearLayout
+            android:id="@+id/likeLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linkContainer">
 
             <ImageView
                 android:id="@+id/likeImageView"
@@ -147,6 +208,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:textSize="14sp"
+                android:textColor="@android:color/darker_gray"
                 tools:text="42" />
 
         </LinearLayout>
