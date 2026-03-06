@@ -42,15 +42,17 @@ object ApiModule {
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(logging)
             .addInterceptor { chain ->
                 val originalRequest = chain.request()
                 val requestBuilder = originalRequest.newBuilder()
                     .addHeader("Api-Key", BuildConfig.API_KEY)
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Accept", "application/json")
 
                 val request = requestBuilder.build()
                 chain.proceed(request)
             }
-            .addInterceptor(logging)
             .build()
     }
 

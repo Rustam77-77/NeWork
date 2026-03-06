@@ -1,16 +1,18 @@
 package ru.netology.nework.repository
 
 import android.content.SharedPreferences
+import android.util.Log
 import com.google.gson.Gson
 import ru.netology.nework.api.AuthApi
 import ru.netology.nework.dto.Credentials
 import ru.netology.nework.dto.RegisterCredentials
 import ru.netology.nework.dto.Token
-import ru.netology.nework.dto.User
 import ru.netology.nework.error.AppError
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import java.io.IOException
 import javax.inject.Inject
@@ -53,38 +55,73 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun authenticate(login: String, password: String): Token {
-        try {
-            val credentials = Credentials(login, password)
-            val response = authApi.authentication(credentials)
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.d("AuthRepository", "Attempting authentication for login: $login")
 
-            if (!response.isSuccessful) {
-                throw AppError.ApiError(response.code(), response.message())
+                val credentials = Credentials(login, password)
+                Log.d("AuthRepository", "Sending credentials: $credentials")
+
+                val response = authApi.authentication(credentials)
+                Log.d("AuthRepository", "Response code: ${response.code()}")
+
+                if (!response.isSuccessful) {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("AuthRepository", "Error: ${response.code()} - $errorBody")
+                    throw AppError.ApiError(response.code(), errorBody ?: response.message())
+                }
+
+                val token = response.body()
+                Log.d("AuthRepository", "Token received: $token")
+
+                if (token == null) {
+                    throw AppError.UnknownError
+                }
+
+                saveAuthData(token, login, "")
+                token
+            } catch (e: IOException) {
+                Log.e("AuthRepository", "Network error", e)
+                throw AppError.NetworkError
+            } catch (e: Exception) {
+                Log.e("AuthRepository", "Unexpected error", e)
+                throw e
             }
-
-            val token = response.body() ?: throw AppError.UnknownError
-
-            saveAuthData(token, login, "")
-            return token
-        } catch (e: IOException) {
-            throw AppError.NetworkError
         }
     }
 
     suspend fun register(login: String, password: String, name: String): Token {
-        try {
-            val credentials = RegisterCredentials(login, password, name)
-            val response = authApi.registration(credentials)
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.d("AuthRepository", "Attempting registration for login: $login, name: $name")
 
-            if (!response.isSuccessful) {
-                throw AppError.ApiError(response.code(), response.message())
+                val credentials = RegisterCredentials(login, password, name)
+                val response = authApi.registration(credentials)
+
+                Log.d("AuthRepository", "Response code: ${response.code()}")
+
+                if (!response.isSuccessful) {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("AuthRepository", "Error: ${response.code()} - $errorBody")
+                    throw AppError.ApiError(response.code(), errorBody ?: response.message())
+                }
+
+                val token = response.body()
+                Log.d("AuthRepository", "Token received: $token")
+
+                if (token == null) {
+                    throw AppError.UnknownError
+                }
+
+                saveAuthData(token, login, name)
+                token
+            } catch (e: IOException) {
+                Log.e("AuthRepository", "Network error", e)
+                throw AppError.NetworkError
+            } catch (e: Exception) {
+                Log.e("AuthRepository", "Unexpected error", e)
+                throw e
             }
-
-            val token = response.body() ?: throw AppError.UnknownError
-
-            saveAuthData(token, login, name)
-            return token
-        } catch (e: IOException) {
-            throw AppError.NetworkError
         }
     }
 
@@ -94,35 +131,56 @@ class AuthRepository @Inject constructor(
         name: String,
         avatarPart: MultipartBody.Part
     ): Token {
-        try {
-            val response = authApi.registerWithAvatar(login, password, name, avatarPart)
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.d("AuthRepository", "Attempting registration with avatar for login: $login")
 
-            if (!response.isSuccessful) {
-                throw AppError.ApiError(response.code(), response.message())
+                val response = authApi.registerWithAvatar(login, password, name, avatarPart)
+
+                Log.d("AuthRepository", "Response code: ${response.code()}")
+
+                if (!response.isSuccessful) {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("AuthRepository", "Error: ${response.code()} - $errorBody")
+                    throw AppError.ApiError(response.code(), errorBody ?: response.message())
+                }
+
+                val token = response.body()
+                Log.d("AuthRepository", "Token received: $token")
+
+                if (token == null) {
+                    throw AppError.UnknownError
+                }
+
+                saveAuthData(token, login, name)
+                token
+            } catch (e: IOException) {
+                Log.e("AuthRepository", "Network error", e)
+                throw AppError.NetworkError
+            } catch (e: Exception) {
+                Log.e("AuthRepository", "Unexpected error", e)
+                throw e
             }
-
-            val token = response.body() ?: throw AppError.UnknownError
-
-            saveAuthData(token, login, name)
-            return token
-        } catch (e: IOException) {
-            throw AppError.NetworkError
         }
     }
 
     suspend fun logout() {
-        prefs.edit()
-            .remove(KEY_TOKEN)
-            .remove(KEY_USER_ID)
-            .remove(KEY_USER_LOGIN)
-            .remove(KEY_USER_NAME)
-            .apply()
+        withContext(Dispatchers.IO) {
+            prefs.edit()
+                .remove(KEY_TOKEN)
+                .remove(KEY_USER_ID)
+                .remove(KEY_USER_LOGIN)
+                .remove(KEY_USER_NAME)
+                .apply()
 
-        _authToken.value = null
-        _currentUserId.value = null
-        _currentUserLogin.value = null
-        _currentUserName.value = null
-        _isAuthenticated.value = false
+            _authToken.value = null
+            _currentUserId.value = null
+            _currentUserLogin.value = null
+            _currentUserName.value = null
+            _isAuthenticated.value = false
+
+            Log.d("AuthRepository", "User logged out")
+        }
     }
 
     private fun saveAuthData(token: Token, login: String, name: String) {
@@ -138,6 +196,8 @@ class AuthRepository @Inject constructor(
         _currentUserLogin.value = login
         _currentUserName.value = name
         _isAuthenticated.value = true
+
+        Log.d("AuthRepository", "Auth data saved for user: $login (ID: ${token.id})")
     }
 
     companion object {

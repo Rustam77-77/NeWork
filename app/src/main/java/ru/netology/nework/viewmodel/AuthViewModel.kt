@@ -1,5 +1,6 @@
 package ru.netology.nework.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -63,21 +64,30 @@ class AuthViewModel @Inject constructor(
     fun authenticate(login: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
+            _error.value = null
+
+            Log.d("AuthViewModel", "Starting authentication for login: $login")
+
             try {
-                authRepository.authenticate(login, password)
+                val token = authRepository.authenticate(login, password)
+                Log.d("AuthViewModel", "Authentication successful, token: $token")
                 _authState.value = AuthState.Success
             } catch (e: AppError.ApiError) {
+                Log.e("AuthViewModel", "API Error: ${e.code} - ${e.message}")
                 _authState.value = AuthState.Error
                 _error.value = when (e.code) {
-                    400 -> "Неверный логин или пароль"  // Специальное сообщение для 400
+                    400 -> "Неправильный логин или пароль"
+                    403 -> "Доступ запрещен. Проверьте API ключ"
                     else -> "Ошибка сервера: ${e.message}"
                 }
             } catch (e: AppError.NetworkError) {
+                Log.e("AuthViewModel", "Network Error", e)
                 _authState.value = AuthState.Error
-                _error.value = "Ошибка сети. Проверьте подключение к интернету"
+                _error.value = "Ошибка сети. Проверьте подключение"
             } catch (e: Exception) {
+                Log.e("AuthViewModel", "Unexpected error", e)
                 _authState.value = AuthState.Error
-                _error.value = "Произошла неизвестная ошибка"
+                _error.value = "Произошла неизвестная ошибка: ${e.message}"
             }
         }
     }
@@ -85,21 +95,30 @@ class AuthViewModel @Inject constructor(
     fun register(login: String, password: String, name: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
+            _error.value = null
+
+            Log.d("AuthViewModel", "Starting registration for login: $login")
+
             try {
-                authRepository.register(login, password, name)
+                val token = authRepository.register(login, password, name)
+                Log.d("AuthViewModel", "Registration successful, token: $token")
                 _authState.value = AuthState.Success
             } catch (e: AppError.ApiError) {
+                Log.e("AuthViewModel", "API Error: ${e.code} - ${e.message}")
                 _authState.value = AuthState.Error
                 _error.value = when (e.code) {
                     400 -> "Пользователь с таким логином уже зарегистрирован"
+                    403 -> "Доступ запрещен. Проверьте API ключ"
                     else -> "Ошибка сервера: ${e.message}"
                 }
             } catch (e: AppError.NetworkError) {
+                Log.e("AuthViewModel", "Network Error", e)
                 _authState.value = AuthState.Error
                 _error.value = "Ошибка сети. Проверьте подключение"
             } catch (e: Exception) {
+                Log.e("AuthViewModel", "Unexpected error", e)
                 _authState.value = AuthState.Error
-                _error.value = "Произошла неизвестная ошибка"
+                _error.value = "Произошла неизвестная ошибка: ${e.message}"
             }
         }
     }
@@ -107,21 +126,30 @@ class AuthViewModel @Inject constructor(
     fun registerWithAvatar(login: String, password: String, name: String, avatarPart: MultipartBody.Part) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
+            _error.value = null
+
+            Log.d("AuthViewModel", "Starting registration with avatar for login: $login")
+
             try {
-                authRepository.registerWithAvatar(login, password, name, avatarPart)
+                val token = authRepository.registerWithAvatar(login, password, name, avatarPart)
+                Log.d("AuthViewModel", "Registration with avatar successful, token: $token")
                 _authState.value = AuthState.Success
             } catch (e: AppError.ApiError) {
+                Log.e("AuthViewModel", "API Error: ${e.code} - ${e.message}")
                 _authState.value = AuthState.Error
                 _error.value = when (e.code) {
                     400 -> "Пользователь с таким логином уже зарегистрирован"
+                    403 -> "Доступ запрещен. Проверьте API ключ"
                     else -> "Ошибка сервера: ${e.message}"
                 }
             } catch (e: AppError.NetworkError) {
+                Log.e("AuthViewModel", "Network Error", e)
                 _authState.value = AuthState.Error
                 _error.value = "Ошибка сети. Проверьте подключение"
             } catch (e: Exception) {
+                Log.e("AuthViewModel", "Unexpected error", e)
                 _authState.value = AuthState.Error
-                _error.value = "Произошла неизвестная ошибка"
+                _error.value = "Произошла неизвестная ошибка: ${e.message}"
             }
         }
     }
@@ -130,6 +158,7 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.logout()
             _authState.value = AuthState.Idle
+            Log.d("AuthViewModel", "User logged out")
         }
     }
 
