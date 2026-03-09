@@ -1,6 +1,5 @@
 package ru.netology.nework.ui.fragment
 
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +11,7 @@ import coil.load
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentEventDetailBinding
 import ru.netology.nework.dto.Event
+import ru.netology.nework.dto.EventType
 import ru.netology.nework.viewmodel.AuthViewModel
 import ru.netology.nework.viewmodel.EventViewModel
 import java.text.SimpleDateFormat
@@ -39,15 +39,9 @@ class EventDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Получаем событие из аргументов
-        currentEvent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arguments?.getSerializable("event", Event::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            arguments?.getSerializable("event") as? Event
-        }
-
-        currentEvent?.let { displayEvent(it) }
+        val event = arguments?.getSerializable("event") as? Event
+        currentEvent = event
+        event?.let { displayEvent(it) }
 
         setupListeners()
     }
@@ -97,9 +91,12 @@ class EventDetailFragment : Fragment() {
                 tvDatetime.text = "📅 ${event.datetime}"
             }
 
-            // Тип события
-            tvType.text = if (event.type == ru.netology.nework.dto.EventType.OFFLINE)
-                "📍 Офлайн" else "🌐 Онлайн"
+            // Тип события - безопасная обработка
+            val eventType = event.type ?: EventType.ONLINE
+            tvType.text = when (eventType) {
+                EventType.OFFLINE -> "📍 Офлайн"
+                EventType.ONLINE -> "🌐 Онлайн"
+            }
 
             // Текст события
             tvContent.text = event.content
@@ -195,11 +192,11 @@ class EventDetailFragment : Fragment() {
                             if (userId != null) {
                                 val isParticipant = event.participantIds.contains(userId)
                                 if (isParticipant) {
-                                    // ИСПРАВЛЕНО: передаем ID события
-                                    eventViewModel.unregisterFromEvent(event.id)
+                                    // Передаем event, а не id
+                                    eventViewModel.unregisterFromEvent(event)
                                 } else {
-                                    // ИСПРАВЛЕНО: передаем ID события
-                                    eventViewModel.registerForEvent(event.id)
+                                    // Передаем event, а не id
+                                    eventViewModel.registerForEvent(event)
                                 }
                             }
                         }
@@ -211,7 +208,7 @@ class EventDetailFragment : Fragment() {
         }
 
         binding.btnBack.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+            requireActivity().onBackPressed()
         }
     }
 

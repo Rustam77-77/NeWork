@@ -21,7 +21,7 @@ data class Event(
     val datetime: String,
     val published: String,
     val coords: Coordinates?,
-    val type: EventType,
+    val type: EventType? = EventType.ONLINE, // Оставляем nullable с дефолтным значением
     val link: String?,
     val speakerIds: List<Long> = emptyList(),
     val speakers: List<UserPreview> = emptyList(),
@@ -29,6 +29,6 @@ data class Event(
     val participants: List<UserPreview> = emptyList(),
     val attachment: Attachment?,
     val likeOwnerIds: List<Long> = emptyList(),
-    val likedByMe: Boolean,
+    val likedByMe: Boolean = false,
     val likes: Int = likeOwnerIds.size
 ) : Serializable

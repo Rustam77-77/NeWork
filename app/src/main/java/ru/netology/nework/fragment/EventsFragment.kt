@@ -7,15 +7,17 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nework.R
-import ru.netology.nework.adapter.EventAdapter
 import ru.netology.nework.databinding.FragmentEventsBinding
+import ru.netology.nework.adapter.EventAdapter
 import ru.netology.nework.dto.Event
-import ru.netology.nework.viewmodel.AuthViewModel
 import ru.netology.nework.viewmodel.EventViewModel
+import ru.netology.nework.viewmodel.AuthViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class EventsFragment : Fragment() {
@@ -52,8 +54,7 @@ class EventsFragment : Fragment() {
             onLikeClickListener = { event ->
                 authViewModel.isAuthenticated.observe(viewLifecycleOwner) { isAuth ->
                     if (isAuth == true) {
-                        // ИСПРАВЛЕНО: передаем ID события и состояние лайка
-                        eventViewModel.likeEvent(event.id, !event.likedByMe)
+                        eventViewModel.likeEvent(event)
                     } else {
                         showAuthDialog()
                     }
@@ -151,8 +152,7 @@ class EventsFragment : Fragment() {
             .setTitle("Удаление события")
             .setMessage("Вы уверены, что хотите удалить это событие?")
             .setPositiveButton("Удалить") { _, _ ->
-                // ИСПРАВЛЕНО: передаем ID события
-                eventViewModel.removeEvent(event.id)
+                eventViewModel.removeEvent(event)
             }
             .setNegativeButton("Отмена", null)
             .show()

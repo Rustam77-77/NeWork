@@ -1,11 +1,7 @@
 package ru.netology.nework.adapter
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.view.animation.ScaleAnimation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -13,16 +9,14 @@ import coil.load
 import ru.netology.nework.R
 import ru.netology.nework.databinding.ItemPostBinding
 import ru.netology.nework.dto.Post
-import ru.netology.nework.dto.AttachmentType
-import ru.netology.nework.utils.DateFormatter
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class PostAdapter(
     private val onLikeClickListener: (Post) -> Unit,
     private val onMenuClickListener: (Post) -> Unit,
     private val onItemClickListener: (Post) -> Unit
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
-
-    private var isLoading = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = ItemPostBinding.inflate(
@@ -34,9 +28,6 @@ class PostAdapter(
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        if (position == itemCount - 1 && !isLoading) {
-            // Здесь можно добавить пагинацию
-        }
         holder.bind(getItem(position))
     }
 
@@ -46,13 +37,6 @@ class PostAdapter(
 
         fun bind(post: Post) {
             binding.apply {
-                // Анимация загрузки аватара
-                avatarImageView.alpha = 0f
-                avatarImageView.animate()
-                    .alpha(1f)
-                    .setDuration(300)
-                    .start()
-
                 // Загрузка аватара
                 if (!post.authorAvatar.isNullOrBlank()) {
                     avatarImageView.load(post.authorAvatar) {
@@ -68,72 +52,62 @@ class PostAdapter(
                 authorNameTextView.text = post.author
 
                 // Дата публикации
-                publishedTextView.text = DateFormatter.formatDate(post.published)
+                try {
+                    val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+                    publishedTextView.text = dateFormat.format(
+                        java.time.Instant.parse(post.published).toEpochMilli()
+                    )
+                } catch (e: Exception) {
+                    publishedTextView.text = post.published
+                }
 
                 // Текст поста
                 contentTextView.text = post.content
 
-                // Лайки с анимацией
+                // Лайки
                 likesCountTextView.text = post.likes.toString()
-
-                // Обработчик лайка с анимацией
-                likeImageView.setOnClickListener {
-                    animateLike()
-                    onLikeClickListener(post)
-                }
-
-                // Устанавливаем иконку лайка
                 likeImageView.setImageResource(
                     if (post.likedByMe) R.drawable.ic_like_filled
                     else R.drawable.ic_like_outline
                 )
 
-                // Обработчик меню
+                // Обработчики кликов
+                likeImageView.setOnClickListener {
+                    onLikeClickListener(post)
+                }
+
                 menuImageView.setOnClickListener {
                     onMenuClickListener(post)
                 }
 
-                // Обработчик клика на карточку
                 root.setOnClickListener {
                     onItemClickListener(post)
                 }
 
-                // Отображение вложения с иконкой типа
+                // Отображение вложения
                 if (post.attachment != null) {
-                    attachmentContainer.visibility = View.VISIBLE
-
-                    // Устанавливаем иконку типа вложения
+                    attachmentImageView.visibility = ViewGroup.VISIBLE
                     when (post.attachment.type) {
-                        AttachmentType.IMAGE -> {
-                            attachmentTypeIcon.setImageResource(R.drawable.ic_image)
+                        ru.netology.nework.dto.AttachmentType.IMAGE -> {
                             attachmentImageView.load(post.attachment.url) {
                                 crossfade(true)
                                 placeholder(R.drawable.ic_image_placeholder)
                             }
                         }
-                        AttachmentType.VIDEO -> {
-                            attachmentTypeIcon.setImageResource(R.drawable.ic_video)
-                            attachmentImageView.setImageResource(R.drawable.video_placeholder)
+                        ru.netology.nework.dto.AttachmentType.VIDEO -> {
+                            attachmentImageView.setImageResource(R.drawable.ic_video)
                         }
-                        AttachmentType.AUDIO -> {
-                            attachmentTypeIcon.setImageResource(R.drawable.ic_audio)
-                            attachmentImageView.setImageResource(R.drawable.audio_placeholder)
+                        ru.netology.nework.dto.AttachmentType.AUDIO -> {
+                            attachmentImageView.setImageResource(R.drawable.ic_audio)
                         }
                     }
-
-                    // Анимация появления вложения
-                    attachmentContainer.alpha = 0f
-                    attachmentContainer.animate()
-                        .alpha(1f)
-                        .setDuration(300)
-                        .start()
                 } else {
-                    attachmentContainer.visibility = View.GONE
+                    attachmentImageView.visibility = ViewGroup.GONE
                 }
 
                 // Ссылка
                 if (!post.link.isNullOrBlank()) {
-                    linkContainer.visibility = View.VISIBLE
+                    linkTextView.visibility = ViewGroup.VISIBLE
                     linkTextView.text = post.link
                     linkTextView.setOnClickListener {
                         val intent = android.content.Intent(
@@ -143,34 +117,9 @@ class PostAdapter(
                         root.context.startActivity(intent)
                     }
                 } else {
-                    linkContainer.visibility = View.GONE
+                    linkTextView.visibility = ViewGroup.GONE
                 }
             }
-        }
-
-        private fun animateLike() {
-            // Анимация лайка
-            val scaleAnimation = ScaleAnimation(
-                1f, 1.3f, 1f, 1.3f,
-                binding.likeImageView.width / 2f,
-                binding.likeImageView.height / 2f
-            )
-            scaleAnimation.duration = 150
-
-            binding.likeImageView.startAnimation(scaleAnimation)
-
-            // Анимация счетчика
-            binding.likesCountTextView.animate()
-                .scaleX(1.2f)
-                .scaleY(1.2f)
-                .setDuration(150)
-                .withEndAction {
-                    binding.likesCountTextView.animate()
-                        .scaleX(1f)
-                        .scaleY(1f)
-                        .setDuration(150)
-                        .start()
-                }.start()
         }
     }
 

@@ -4,10 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import ru.netology.nework.dto.Event
 import ru.netology.nework.repository.EventRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -68,27 +68,23 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun likeEvent(eventId: Long, likedByMe: Boolean) {
+    fun likeEvent(event: Event) {
         viewModelScope.launch {
-            val updatedEvent = if (likedByMe) {
-                eventRepository.likeById(eventId)
-            } else {
-                eventRepository.dislikeById(eventId)
-            }
-
+            val updatedEvent = eventRepository.likeEvent(event)
             if (updatedEvent != null) {
-                if (_selectedEvent.value?.id == eventId) {
+                // Обновляем выбранное событие, если это оно
+                if (_selectedEvent.value?.id == event.id) {
                     _selectedEvent.postValue(updatedEvent)
                 }
             }
         }
     }
 
-    fun removeEvent(eventId: Long) {
+    fun removeEvent(event: Event) {
         viewModelScope.launch {
-            val success = eventRepository.removeById(eventId)
+            val success = eventRepository.removeEvent(event)
             if (success) {
-                loadEvents()
+                loadEvents() // Перезагружаем список после удаления
             }
         }
     }
@@ -97,16 +93,16 @@ class EventViewModel @Inject constructor(
         viewModelScope.launch {
             val savedEvent = eventRepository.saveEvent(event)
             if (savedEvent != null) {
-                loadEvents()
+                loadEvents() // Перезагружаем список после сохранения
             }
         }
     }
 
-    fun registerForEvent(eventId: Long) {
+    fun registerForEvent(event: Event) {
         viewModelScope.launch {
-            val updatedEvent = eventRepository.registerForEvent(eventId)
+            val updatedEvent = eventRepository.registerForEvent(event)
             if (updatedEvent != null) {
-                if (_selectedEvent.value?.id == eventId) {
+                if (_selectedEvent.value?.id == event.id) {
                     _selectedEvent.postValue(updatedEvent)
                 }
                 loadEvents()
@@ -114,11 +110,11 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun unregisterFromEvent(eventId: Long) {
+    fun unregisterFromEvent(event: Event) {
         viewModelScope.launch {
-            val updatedEvent = eventRepository.unregisterFromEvent(eventId)
+            val updatedEvent = eventRepository.unregisterFromEvent(event)
             if (updatedEvent != null) {
-                if (_selectedEvent.value?.id == eventId) {
+                if (_selectedEvent.value?.id == event.id) {
                     _selectedEvent.postValue(updatedEvent)
                 }
                 loadEvents()
