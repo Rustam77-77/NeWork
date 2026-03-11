@@ -1,256 +1,166 @@
 package ru.netology.nework.repository
 
-import android.content.SharedPreferences
-import com.google.gson.Gson
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.nework.api.AuthApi
-import ru.netology.nework.dto.Credentials
-import ru.netology.nework.dto.RegisterCredentials
+import ru.netology.nework.api.UsersApi
 import ru.netology.nework.dto.Token
-import ru.netology.nework.error.AppError
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import okhttp3.MultipartBody
-import java.io.IOException
+import ru.netology.nework.dto.User
+import ru.netology.nework.error.ApiError
+import ru.netology.nework.error.NetworkError
+import ru.netology.nework.error.UnknownError
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AuthRepository @Inject constructor(
     private val authApi: AuthApi,
-    private val prefs: SharedPreferences,
-    private val gson: Gson
+    private val usersApi: UsersApi,
 ) {
-    private val _isAuthenticated = MutableStateFlow(false)
-    val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
+    private val _authorized = MutableLiveData(false)
+    val authorized: LiveData<Boolean> = _authorized
 
-    private val _authToken = MutableStateFlow<String?>(null)
-    val authToken: StateFlow<String?> = _authToken.asStateFlow()
+    private val _user = MutableLiveData<User?>()
+    val user: LiveData<User?> = _user
 
-    private val _currentUserId = MutableStateFlow<Long?>(null)
-    val currentUserId: StateFlow<Long?> = _currentUserId.asStateFlow()
+    private val _token = MutableLiveData<Token?>()
+    val token: LiveData<Token?> = _token
 
-    private val _currentUserLogin = MutableStateFlow<String?>(null)
-    val currentUserLogin: StateFlow<String?> = _currentUserLogin.asStateFlow()
+    private val _authError = MutableLiveData<String?>()
+    val authError: LiveData<String?> = _authError
 
-    private val _currentUserName = MutableStateFlow<String?>(null)
-    val currentUserName: StateFlow<String?> = _currentUserName.asStateFlow()
+    private val _regError = MutableLiveData<String?>()
+    val regError: LiveData<String?> = _regError
+
+    private val _currentUserId = MutableLiveData<Long?>()
+    val currentUserId: LiveData<Long?> = _currentUserId
+
+    private val _isAuthenticated = MutableLiveData(false)
+    val isAuthenticated: LiveData<Boolean> = _isAuthenticated
 
     init {
-        val token = prefs.getString(KEY_TOKEN, null)
-        val userId = if (prefs.contains(KEY_USER_ID)) prefs.getLong(KEY_USER_ID, -1) else -1
-        val userLogin = prefs.getString(KEY_USER_LOGIN, null)
-        val userName = prefs.getString(KEY_USER_NAME, null)
-
-        if (token != null && userId != -1L) {
-            _authToken.value = token
-            _currentUserId.value = userId
-            _currentUserLogin.value = userLogin
-            _currentUserName.value = userName
-            _isAuthenticated.value = true
-        }
+        loadStoredUserData()
     }
 
-    suspend fun authenticate(login: String, password: String): Token {
-<<<<<<< HEAD
+    private fun loadStoredUserData() {
+        _authorized.postValue(false)
+        _isAuthenticated.postValue(false)
+        _currentUserId.postValue(null)
+    }
+
+    suspend fun authenticate(login: String, pass: String): Result<Token> = withContext(Dispatchers.IO) {
         try {
-            val credentials = Credentials(login, password)
-            val response = authApi.authentication(credentials)
+            Log.d("AuthRepository", "Authenticating user: $login")
 
-            if (!response.isSuccessful) {
-                throw AppError.ApiError(response.code(), response.message())
-            }
+            val json = """
+                {
+                    "login": "$login",
+                    "password": "$pass"
+                }
+            """.trimIndent()
 
-            val token = response.body() ?: throw AppError.UnknownError
-            saveAuthData(token, login, "")
-            return token
-        } catch (e: IOException) {
-            throw AppError.NetworkError
-=======
-        return try {
-            println("Authenticating user: $login")
+            val requestBody = json.toRequestBody("application/json".toMediaType())
 
-            val credentials = Credentials(login, password)
-            val response = authApi.authentication(credentials)
-
-            println("Auth response code: ${response.code()}")
+            val response = authApi.authentication(requestBody)
 
             if (!response.isSuccessful) {
                 val errorBody = response.errorBody()?.string()
-                println("Auth error body: $errorBody")
-                throw AppError.ApiError(response.code(), errorBody ?: response.message())
+                Log.e("AuthRepository", "Error: ${response.code()} - $errorBody")
+                return@withContext Result.failure(ApiError(response.code(), errorBody ?: "Unknown error"))
             }
 
             val token = response.body()
-            if (token == null) {
-                println("Token is null")
-                throw AppError.UnknownError
+            if (token != null) {
+                _token.postValue(token)
+                _authorized.postValue(true)
+                _isAuthenticated.postValue(true)
+                _authError.postValue(null)
+                Result.success(token)
+            } else {
+                Result.failure(UnknownError)
             }
-
-            println("Auth successful, token: ${token.token}")
-            saveAuthData(token, login, "")
-            token
-        } catch (e: IOException) {
-            println("Network error: ${e.message}")
-            throw AppError.NetworkError
-        } catch (e: AppError.ApiError) {
-            println("API error: ${e.code} - ${e.message}")
-            throw e
         } catch (e: Exception) {
-            println("Unexpected error: ${e.message}")
-            e.printStackTrace()
-            throw AppError.UnknownError
->>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
+            Log.e("AuthRepository", "Exception: ${e.message}", e)
+            Result.failure(NetworkError)
         }
     }
 
-    suspend fun register(login: String, password: String, name: String): Token {
-<<<<<<< HEAD
+    suspend fun register(login: String, pass: String, name: String): Result<User> = withContext(Dispatchers.IO) {
         try {
-            val credentials = RegisterCredentials(login, password, name)
-            val response = authApi.registration(credentials)
+            val json = """
+                {
+                    "login": "$login",
+                    "password": "$pass",
+                    "name": "$name"
+                }
+            """.trimIndent()
 
-            if (!response.isSuccessful) {
-                throw AppError.ApiError(response.code(), response.message())
-            }
+            val requestBody = json.toRequestBody("application/json".toMediaType())
 
-            val token = response.body() ?: throw AppError.UnknownError
-            saveAuthData(token, login, name)
-            return token
-        } catch (e: IOException) {
-            throw AppError.NetworkError
-=======
-        return try {
-            println("Registering user: $login, name: $name")
-
-            val credentials = RegisterCredentials(login, password, name)
-            val response = authApi.registration(credentials)
-
-            println("Register response code: ${response.code()}")
+            val response = usersApi.registerUser(requestBody)
 
             if (!response.isSuccessful) {
                 val errorBody = response.errorBody()?.string()
-                println("Register error body: $errorBody")
-                throw AppError.ApiError(response.code(), errorBody ?: response.message())
+                return@withContext Result.failure(ApiError(response.code(), errorBody ?: "Unknown error"))
             }
 
-            val token = response.body()
-            if (token == null) {
-                println("Token is null")
-                throw AppError.UnknownError
+            val user = response.body()
+            if (user != null) {
+                _regError.postValue(null)
+                Result.success(user)
+            } else {
+                Result.failure(UnknownError)
             }
-
-            println("Register successful, token: ${token.token}")
-            saveAuthData(token, login, name)
-            token
-        } catch (e: IOException) {
-            println("Network error: ${e.message}")
-            throw AppError.NetworkError
-        } catch (e: AppError.ApiError) {
-            println("API error: ${e.code} - ${e.message}")
-            throw e
         } catch (e: Exception) {
-            println("Unexpected error: ${e.message}")
-            e.printStackTrace()
-            throw AppError.UnknownError
->>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
+            Result.failure(NetworkError)
         }
     }
 
-    suspend fun registerWithAvatar(
-        login: String,
-        password: String,
-        name: String,
-        avatarPart: MultipartBody.Part
-    ): Token {
-<<<<<<< HEAD
+    suspend fun getUserById(id: String): Result<User> = withContext(Dispatchers.IO) {
         try {
-            val response = authApi.registerWithAvatar(login, password, name, avatarPart)
-
-            if (!response.isSuccessful) {
-                throw AppError.ApiError(response.code(), response.message())
-            }
-
-            val token = response.body() ?: throw AppError.UnknownError
-            saveAuthData(token, login, name)
-            return token
-        } catch (e: IOException) {
-            throw AppError.NetworkError
-=======
-        return try {
-            println("Registering user with avatar: $login, name: $name")
-
-            val response = authApi.registerWithAvatar(login, password, name, avatarPart)
-
-            println("Register with avatar response code: ${response.code()}")
+            val response = usersApi.getUserById(id)
 
             if (!response.isSuccessful) {
                 val errorBody = response.errorBody()?.string()
-                println("Register error body: $errorBody")
-                throw AppError.ApiError(response.code(), errorBody ?: response.message())
+                return@withContext Result.failure(ApiError(response.code(), errorBody ?: "Unknown error"))
             }
 
-            val token = response.body()
-            if (token == null) {
-                println("Token is null")
-                throw AppError.UnknownError
+            val user = response.body()
+            if (user != null) {
+                _user.postValue(user)
+                _currentUserId.postValue(user.id)
+                Result.success(user)
+            } else {
+                Result.failure(UnknownError)
             }
-
-            println("Register successful, token: ${token.token}")
-            saveAuthData(token, login, name)
-            token
-        } catch (e: IOException) {
-            println("Network error: ${e.message}")
-            throw AppError.NetworkError
-        } catch (e: AppError.ApiError) {
-            println("API error: ${e.code} - ${e.message}")
-            throw e
         } catch (e: Exception) {
-            println("Unexpected error: ${e.message}")
-            e.printStackTrace()
-            throw AppError.UnknownError
->>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
+            Result.failure(NetworkError)
         }
     }
 
-    suspend fun logout() {
-        prefs.edit()
-            .remove(KEY_TOKEN)
-            .remove(KEY_USER_ID)
-            .remove(KEY_USER_LOGIN)
-            .remove(KEY_USER_NAME)
-            .apply()
-
-        _authToken.value = null
-        _currentUserId.value = null
-        _currentUserLogin.value = null
-        _currentUserName.value = null
-        _isAuthenticated.value = false
+    fun logout() {
+        _token.postValue(null)
+        _user.postValue(null)
+        _authorized.postValue(false)
+        _isAuthenticated.postValue(false)
+        _currentUserId.postValue(null)
     }
 
-    private fun saveAuthData(token: Token, login: String, name: String) {
-        prefs.edit()
-            .putString(KEY_TOKEN, token.token)
-            .putLong(KEY_USER_ID, token.id)
-            .putString(KEY_USER_LOGIN, login)
-            .putString(KEY_USER_NAME, name)
-            .apply()
-
-        _authToken.value = token.token
-        _currentUserId.value = token.id
-        _currentUserLogin.value = login
-        _currentUserName.value = name
-        _isAuthenticated.value = true
+    fun clearAuthError() {
+        _authError.postValue(null)
     }
 
-    companion object {
-        private const val KEY_TOKEN = "token"
-        private const val KEY_USER_ID = "user_id"
-        private const val KEY_USER_LOGIN = "user_login"
-        private const val KEY_USER_NAME = "user_name"
+    fun clearRegError() {
+        _regError.postValue(null)
     }
-<<<<<<< HEAD
+
+    fun clearError() {
+        _authError.postValue(null)
+        _regError.postValue(null)
+    }
 }
-=======
-}
->>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399

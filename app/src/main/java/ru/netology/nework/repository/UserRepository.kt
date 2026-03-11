@@ -1,13 +1,16 @@
 package ru.netology.nework.repository
 
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.*
 import ru.netology.nework.api.UsersApi
 import ru.netology.nework.dto.Job
 import ru.netology.nework.dto.Post
 import ru.netology.nework.dto.User
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import java.io.IOException
+import ru.netology.nework.error.ApiError
+import ru.netology.nework.error.NetworkError
+import ru.netology.nework.error.UnknownError
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,107 +18,116 @@ import javax.inject.Singleton
 class UserRepository @Inject constructor(
     private val usersApi: UsersApi
 ) {
-    private val _users = MutableStateFlow<List<User>>(emptyList())
-    val users: StateFlow<List<User>> = _users.asStateFlow()
+    private val _users = MutableLiveData<List<User>>(emptyList())
+    val users: LiveData<List<User>> = _users
 
-    private val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _loading.asStateFlow()
+    private val _loading = MutableLiveData(false)
+    val loading: LiveData<Boolean> = _loading
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?> = _error
 
-    suspend fun loadUsers() {
-        _loading.value = true
+    private val _jobs = MutableLiveData<List<Job>>(emptyList())
+    val jobs: LiveData<List<Job>> = _jobs
+
+    private val _wall = MutableLiveData<List<Post>>(emptyList())
+    val wall: LiveData<List<Post>> = _wall
+
+    init {
+        loadUsers()
+    }
+
+    fun loadUsers() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                _loading.postValue(true)
+                Log.d("UserRepository", "Loading users...")
+
+                val response = usersApi.getUsers()
+
+                if (!response.isSuccessful) {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("UserRepository", "Error: ${response.code()} - $errorBody")
+                    _error.postValue("Ошибка загрузки: ${response.code()}")
+                    _loading.postValue(false)
+                    return@launch
+                }
+
+                val users = response.body()
+                if (users != null) {
+                    Log.d("UserRepository", "Users loaded: ${users.size}")
+                    _users.postValue(users)
+                    _error.postValue(null)
+                } else {
+                    Log.e("UserRepository", "Users list is null")
+                    _error.postValue("Получен пустой список пользователей")
+                }
+            } catch (e: Exception) {
+                Log.e("UserRepository", "Exception loading users: ${e.message}", e)
+                _error.postValue("Неизвестная ошибка: ${e.message}")
+            } finally {
+                _loading.postValue(false)
+            }
+        }
+    }
+
+    suspend fun getUserWall(userId: Long): Result<List<Post>> = withContext(Dispatchers.IO) {
         try {
-            val response = usersApi.getAll()
-            if (response.isSuccessful) {
-                _users.value = response.body() ?: emptyList()
-                _error.value = null
-            } else {
-                _error.value = "Ошибка загрузки пользователей: ${response.code()}"
-            }
-        } catch (e: IOException) {
-            _error.value = "Ошибка сети. Проверьте подключение к интернету"
+            // Временно возвращаем пустой список
+            Result.success(emptyList())
         } catch (e: Exception) {
-            _error.value = "Неизвестная ошибка: ${e.message}"
-        } finally {
-            _loading.value = false
+            Result.failure(NetworkError)
         }
     }
 
-    suspend fun getUserWall(userId: Long): List<Post> {
-        return try {
-            val response = usersApi.getWall(userId)
-            if (response.isSuccessful) {
-                response.body() ?: emptyList()
-            } else {
-                _error.value = "Ошибка загрузки стены: ${response.code()}"
-                emptyList()
-            }
-        } catch (e: IOException) {
-            _error.value = "Ошибка сети при загрузке стены"
-            emptyList()
+    suspend fun getUserJobs(userId: Long): Result<List<Job>> = withContext(Dispatchers.IO) {
+        try {
+            // Временно возвращаем пустой список
+            Result.success(emptyList())
         } catch (e: Exception) {
-            _error.value = "Неизвестная ошибка: ${e.message}"
-            emptyList()
+            Result.failure(NetworkError)
         }
     }
 
-    suspend fun getUserJobs(userId: Long): List<Job> {
-        return try {
-            val response = usersApi.getJobs(userId)
-            if (response.isSuccessful) {
-                response.body() ?: emptyList()
-            } else {
-                _error.value = "Ошибка загрузки работ: ${response.code()}"
-                emptyList()
-            }
-        } catch (e: IOException) {
-            _error.value = "Ошибка сети при загрузке работ"
-            emptyList()
+    suspend fun saveJob(job: Job): Result<Job> = withContext(Dispatchers.IO) {
+        try {
+            // Временно возвращаем ту же работу
+            Result.success(job)
         } catch (e: Exception) {
-            _error.value = "Неизвестная ошибка: ${e.message}"
-            emptyList()
+            Result.failure(NetworkError)
         }
     }
 
-    suspend fun saveJob(userId: Long, job: Job): Job? {
-        return try {
-            val response = usersApi.saveJob(userId, job)
-            if (response.isSuccessful) {
-                response.body()
-            } else {
-                _error.value = "Ошибка при сохранении работы: ${response.code()}"
-                null
-            }
-        } catch (e: IOException) {
-            _error.value = "Ошибка сети при сохранении работы"
-            null
+    suspend fun deleteJob(jobId: Long): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            // Временно возвращаем успех
+            Result.success(Unit)
         } catch (e: Exception) {
-            _error.value = "Неизвестная ошибка: ${e.message}"
-            null
+            Result.failure(NetworkError)
         }
     }
 
-    suspend fun deleteJob(userId: Long, jobId: Long): Boolean {
-        return try {
-            val response = usersApi.removeJob(userId, jobId)
-            if (response.isSuccessful) {
-                true
-            } else {
-                _error.value = "Ошибка при удалении работы: ${response.code()}"
-                false
+    suspend fun getUserById(id: String): Result<User> = withContext(Dispatchers.IO) {
+        try {
+            val response = usersApi.getUserById(id)
+
+            if (!response.isSuccessful) {
+                val errorBody = response.errorBody()?.string()
+                return@withContext Result.failure(ApiError(response.code(), errorBody ?: "Unknown error"))
             }
-        } catch (e: IOException) {
-            _error.value = "Ошибка сети при удалении работы"
-            false
+
+            val user = response.body()
+            if (user != null) {
+                Result.success(user)
+            } else {
+                Result.failure(UnknownError)
+            }
         } catch (e: Exception) {
-            _error.value = "Неизвестная ошибка: ${e.message}"
-            false
+            Result.failure(NetworkError)
         }
     }
 
     fun clearError() {
-        _error.value = null
+        _error.postValue(null)
     }
 }

@@ -1,18 +1,17 @@
-package ru.netology.nework.ui.fragment
+package ru.netology.nework.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentLoginBinding
+import ru.netology.nework.model.AuthState
 import ru.netology.nework.viewmodel.AuthViewModel
-import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
@@ -20,7 +19,7 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: AuthViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,93 +33,51 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupListeners()
-        setupObservers()
-        setupValidation()
-    }
-
-    private fun setupListeners() {
         binding.btnLogin.setOnClickListener {
             val login = binding.etLogin.text.toString()
             val password = binding.etPassword.text.toString()
 
-            if (validateInputs()) {
-                viewModel.authenticate(login, password)
+            if (login.isNotBlank() && password.isNotBlank()) {
+                authViewModel.authenticate(login, password)
             }
         }
 
-        binding.btnRegister.setOnClickListener {
-            findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
+        binding.tvRegister.setOnClickListener {
+            // Временно просто показываем сообщение или ничего не делаем
+            binding.tvError.text = "Переход на регистрацию временно недоступен"
+            binding.tvError.visibility = View.VISIBLE
         }
-    }
 
-    private fun setupObservers() {
-        viewModel.authState.observe(viewLifecycleOwner) { state ->
+        authViewModel.authState.observe(viewLifecycleOwner) { state ->
             when (state) {
-                is AuthViewModel.AuthState.Loading -> {
-                    binding.progressBar.visibility = View.VISIBLE
+                AuthState.LOADING -> {
                     binding.btnLogin.isEnabled = false
+                    binding.progressBar.visibility = View.VISIBLE
                 }
-                is AuthViewModel.AuthState.Success -> {
-                    binding.progressBar.visibility = View.GONE
-                    findNavController().navigate(R.id.action_loginFragment_to_mainFragment)
-                }
-                is AuthViewModel.AuthState.Error -> {
-                    binding.progressBar.visibility = View.GONE
+                AuthState.SUCCESS -> {
                     binding.btnLogin.isEnabled = true
+                    binding.progressBar.visibility = View.GONE
+                    binding.tvError.text = "Вход выполнен успешно"
+                    binding.tvError.visibility = View.VISIBLE
+                }
+                AuthState.ERROR -> {
+                    binding.btnLogin.isEnabled = true
+                    binding.progressBar.visibility = View.GONE
+                    authViewModel.clearError()
                 }
                 else -> {
-                    binding.progressBar.visibility = View.GONE
                     binding.btnLogin.isEnabled = true
+                    binding.progressBar.visibility = View.GONE
                 }
             }
         }
 
-        viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
-            errorMessage?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-                viewModel.clearError()
+        authViewModel.authError.observe(viewLifecycleOwner) { error ->
+            error?.let {
+                binding.tvError.text = it
+                binding.tvError.visibility = View.VISIBLE
             }
         }
-    }
-
-    private fun setupValidation() {
-        // Валидация при изменении текста
-        binding.etLogin.addTextChangedListener {
-            validateInputs()
-        }
-
-        binding.etPassword.addTextChangedListener {
-            validateInputs()
-        }
-    }
-
-    private fun validateInputs(): Boolean {
-        val login = binding.etLogin.text.toString()
-        val password = binding.etPassword.text.toString()
-
-        var isValid = true
-
-        // Проверка логина - непустая строка
-        if (login.isBlank()) {
-            binding.tilLogin.error = "Логин не может быть пустым"
-            isValid = false
-        } else {
-            binding.tilLogin.error = null
-        }
-
-        // Проверка пароля - непустая строка
-        if (password.isBlank()) {
-            binding.tilPassword.error = "Пароль не может быть пустым"
-            isValid = false
-        } else {
-            binding.tilPassword.error = null
-        }
-
-        // Активируем/деактивируем кнопку в зависимости от валидности
-        binding.btnLogin.isEnabled = isValid
-
-        return isValid
     }
 
     override fun onDestroyView() {

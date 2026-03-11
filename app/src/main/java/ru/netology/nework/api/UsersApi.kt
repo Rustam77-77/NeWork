@@ -1,28 +1,19 @@
 package ru.netology.nework.api
 
-import ru.netology.nework.dto.Job
-import ru.netology.nework.dto.Post
-import ru.netology.nework.dto.User
-import ru.netology.nework.dto.UserWithJobs
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
+import ru.netology.nework.dto.User
 
 interface UsersApi {
     @GET("api/users")
-    suspend fun getAll(): Response<List<User>>
+    suspend fun getUsers(): Response<List<User>>
 
     @GET("api/users/{id}")
-    suspend fun getById(@Path("id") id: Long): Response<UserWithJobs>
+    suspend fun getUserById(@Path("id") id: String): Response<User>
 
-    @GET("api/users/{id}/wall")
-    suspend fun getWall(@Path("id") id: Long): Response<List<Post>>
-
-    @GET("api/users/{userId}/jobs")
-    suspend fun getJobs(@Path("userId") userId: Long): Response<List<Job>>
-
-    @POST("api/users/{userId}/jobs")
-    suspend fun saveJob(@Path("userId") userId: Long, @Body job: Job): Response<Job>
-
-    @DELETE("api/users/{userId}/jobs/{jobId}")
-    suspend fun removeJob(@Path("userId") userId: Long, @Path("jobId") jobId: Long): Response<Unit>
+    @POST("api/users/registration")
+    suspend fun registerUser(
+        @Body body: RequestBody
+    ): Response<User>
 }

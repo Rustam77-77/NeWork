@@ -1,7 +1,7 @@
 package ru.netology.nework.error
 
-sealed class AppError : RuntimeException() {
-    object NetworkError : AppError()
-    object UnknownError : AppError()
-    data class ApiError(val code: Int, override val message: String) : AppError()
-}
+import java.io.IOException
+
+class ApiError(val code: Int, message: String) : IOException(message)
+object NetworkError : IOException("Network error")
+object UnknownError : IOException("Unknown error")

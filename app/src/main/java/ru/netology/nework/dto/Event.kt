@@ -1,38 +1,24 @@
 package ru.netology.nework.dto
 
-import com.google.gson.annotations.SerializedName
-import java.io.Serializable
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
 enum class EventType {
-    @SerializedName("offline")
-    OFFLINE,
-
-    @SerializedName("online")
-    ONLINE
+    ONLINE,
+    OFFLINE
 }
 
+@Parcelize
+data class UserPreview(
+    val id: Long,
+    val name: String,
+    val avatar: String?
+) : Parcelable
+
+@Parcelize
 data class Event(
     val id: Long,
     val authorId: Long,
-<<<<<<< HEAD
-    val author: String?,
-    val authorAvatar: String?,
-    val authorJob: String?,
-    val content: String?,
-    val datetime: String?,
-    val published: String?,
-    val coords: Coordinates?,
-    val type: EventType?,
-    val link: String?,
-    val speakerIds: List<Long>? = emptyList(),
-    val speakers: List<UserPreview>? = emptyList(),
-    val participantIds: List<Long>? = emptyList(),
-    val participants: List<UserPreview>? = emptyList(),
-    val attachment: Attachment?,
-    val likeOwnerIds: List<Long>? = emptyList(),
-    val likedByMe: Boolean?,
-    val likes: Int? = likeOwnerIds?.size ?: 0
-=======
     val author: String,
     val authorAvatar: String?,
     val authorJob: String?,
@@ -40,15 +26,20 @@ data class Event(
     val datetime: String,
     val published: String,
     val coords: Coordinates?,
-    val type: EventType? = EventType.ONLINE, // Оставляем nullable с дефолтным значением
+    val type: EventType?,
     val link: String?,
-    val speakerIds: List<Long> = emptyList(),
-    val speakers: List<UserPreview> = emptyList(),
-    val participantIds: List<Long> = emptyList(),
-    val participants: List<UserPreview> = emptyList(),
+    val likeCount: Int?,
+    val dislikeCount: Int?,
+    val likedByMe: Boolean?,
+    val dislikedByMe: Boolean?,
+    val ownedByMe: Boolean?,
+    val participantsCount: Int?,
+    val participatedByMe: Boolean?,
     val attachment: Attachment?,
-    val likeOwnerIds: List<Long> = emptyList(),
-    val likedByMe: Boolean = false,
-    val likes: Int = likeOwnerIds.size
->>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
-) : Serializable
+    val speakerIds: List<Long>?,
+    val speakers: List<UserPreview>?,
+    val title: String,
+    val likeOwnerIds: List<Long>? = emptyList(),
+    val mentionIds: List<Long>? = emptyList(),
+    val mentionedMe: Boolean? = false
+) : Parcelable

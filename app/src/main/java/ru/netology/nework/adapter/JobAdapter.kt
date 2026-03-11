@@ -5,151 +5,85 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-<<<<<<< HEAD
-import ru.netology.nework.R
-=======
->>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
-import ru.netology.nework.databinding.ItemJobBinding
+import ru.netology.nework.databinding.CardJobBinding
 import ru.netology.nework.dto.Job
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class JobAdapter(
-<<<<<<< HEAD
-    private val onEditClick: (Job) -> Unit = {},
-    private val onDeleteClick: (Job) -> Unit = {}
-=======
-    private val onDeleteClickListener: (Job) -> Unit = {},
-    private val onEditClickListener: (Job) -> Unit = {}
->>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
+    private val onInteractionListener: OnInteractionListener
 ) : ListAdapter<Job, JobAdapter.JobViewHolder>(JobDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JobViewHolder {
-        val binding = ItemJobBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return JobViewHolder(binding)
+        val binding = CardJobBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return JobViewHolder(binding, onInteractionListener)
     }
 
     override fun onBindViewHolder(holder: JobViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    inner class JobViewHolder(
-        private val binding: ItemJobBinding
+    class JobViewHolder(
+        private val binding: CardJobBinding,
+        private val onInteractionListener: OnInteractionListener
     ) : RecyclerView.ViewHolder(binding.root) {
+
+        private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
         fun bind(job: Job) {
             binding.apply {
-<<<<<<< HEAD
-                tvCompanyName.text = job.name
-                tvPosition.text = job.position
+                name.text = job.name
+                position.text = job.position
 
-                // Форматирование периода работы
-                try {
-                    val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale("ru"))
+                val startDate = formatDate(job.start)
+                val endDate = job.finish?.let { formatDate(it) } ?: "настоящее время"
+                period.text = "$startDate - $endDate"
 
-                    val startDate = inputFormat.parse(job.start)
-                    val startStr = outputFormat.format(startDate)
-
-                    val period = if (job.finish != null) {
-                        val finishDate = inputFormat.parse(job.finish)
-                        val finishStr = outputFormat.format(finishDate)
-                        "$startStr — $finishStr"
-                    } else {
-                        "$startStr — настоящее время"
-                    }
-
-                    tvPeriod.text = period
-                } catch (e: Exception) {
-                    tvPeriod.text = "${job.start} — ${job.finish ?: "настоящее время"}"
-=======
-                companyTextView.text = job.name
-                positionTextView.text = job.position
-
-                // Форматирование периода работы
-                try {
-                    val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale("ru"))
-                    val startDate = dateFormat.format(
-                        java.time.LocalDate.parse(job.start).toEpochDay()
-                    )
-
-                    val period = if (job.finish != null) {
-                        val finishDate = dateFormat.format(
-                            java.time.LocalDate.parse(job.finish).toEpochDay()
-                        )
-                        "$startDate - $finishDate"
-                    } else {
-                        "$startDate - настоящее время"
-                    }
-
-                    periodTextView.text = period
-                } catch (e: Exception) {
-                    periodTextView.text = "${job.start} - ${job.finish ?: "настоящее время"}"
->>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
-                }
-
-                // Ссылка
                 if (!job.link.isNullOrBlank()) {
-<<<<<<< HEAD
-                    tvLink.visibility = ViewGroup.VISIBLE
-                    tvLink.text = job.link
-                    tvLink.setOnClickListener {
-=======
-                    linkTextView.visibility = ViewGroup.VISIBLE
-                    linkTextView.text = job.link
-                    linkTextView.setOnClickListener {
->>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
-                        val intent = android.content.Intent(
-                            android.content.Intent.ACTION_VIEW,
-                            android.net.Uri.parse(job.link)
-                        )
-                        root.context.startActivity(intent)
-                    }
+                    link.text = job.link
+                    link.visibility = android.view.View.VISIBLE
                 } else {
-<<<<<<< HEAD
-                    tvLink.visibility = ViewGroup.GONE
+                    link.visibility = android.view.View.GONE
                 }
 
-                // Кнопки редактирования и удаления
-                btnEdit.setOnClickListener { onEditClick(job) }
-                btnDelete.setOnClickListener { onDeleteClick(job) }
-=======
-                    linkTextView.visibility = ViewGroup.GONE
-                }
-
-                // Кнопки редактирования и удаления
-                if (onEditClickListener != JobAdapter({}, {})::onEditClickListener ||
-                    onDeleteClickListener != JobAdapter({}, {})::onDeleteClickListener) {
-                    editButton.visibility = ViewGroup.VISIBLE
-                    deleteButton.visibility = ViewGroup.VISIBLE
+                if (job.ownedByMe) {
+                    editButton.visibility = android.view.View.VISIBLE
+                    deleteButton.visibility = android.view.View.VISIBLE
 
                     editButton.setOnClickListener {
-                        onEditClickListener(job)
+                        onInteractionListener.onEditClicked(job)
                     }
 
                     deleteButton.setOnClickListener {
-                        onDeleteClickListener(job)
+                        onInteractionListener.onDeleteClicked(job)
                     }
                 } else {
-                    editButton.visibility = ViewGroup.GONE
-                    deleteButton.visibility = ViewGroup.GONE
+                    editButton.visibility = android.view.View.GONE
+                    deleteButton.visibility = android.view.View.GONE
                 }
->>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
+            }
+        }
+
+        private fun formatDate(dateString: String): String {
+            return try {
+                val date = dateFormat.parse(dateString)
+                SimpleDateFormat("MMM yyyy", Locale.getDefault()).format(date ?: return dateString)
+            } catch (e: Exception) {
+                dateString
             }
         }
     }
 
-    class JobDiffCallback : DiffUtil.ItemCallback<Job>() {
-        override fun areItemsTheSame(oldItem: Job, newItem: Job): Boolean {
-            return oldItem.id == newItem.id
-        }
+    interface OnInteractionListener {
+        fun onEditClicked(job: Job)
+        fun onDeleteClicked(job: Job)
+    }
 
-        override fun areContentsTheSame(oldItem: Job, newItem: Job): Boolean {
-            return oldItem == newItem
-        }
+    class JobDiffCallback : DiffUtil.ItemCallback<Job>() {
+        override fun areItemsTheSame(oldItem: Job, newItem: Job): Boolean =
+            oldItem.id == newItem.id
+
+        override fun areContentsTheSame(oldItem: Job, newItem: Job): Boolean =
+            oldItem == newItem
     }
 }

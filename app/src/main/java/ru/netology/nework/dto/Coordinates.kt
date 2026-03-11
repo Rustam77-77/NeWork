@@ -1,8 +1,10 @@
 package ru.netology.nework.dto
 
-import java.io.Serializable
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class Coordinates(
     val lat: Double,
-    val long: Double
-) : Serializable
+    val lng: Double
+) : Parcelable

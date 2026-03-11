@@ -6,77 +6,63 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import coil.transform.CircleCropTransformation
 import ru.netology.nework.R
 import ru.netology.nework.databinding.ItemUserSelectionBinding
 import ru.netology.nework.dto.User
 
 class UserSelectionAdapter(
-    private val onUserSelected: (User, Boolean) -> Unit
+    private val onInteractionListener: OnInteractionListener
 ) : ListAdapter<User, UserSelectionAdapter.UserViewHolder>(UserDiffCallback()) {
 
-    private val selectedUsers = mutableSetOf<Long>()
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
-        val binding = ItemUserSelectionBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return UserViewHolder(binding)
+        val binding = ItemUserSelectionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return UserViewHolder(binding, onInteractionListener)
     }
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    inner class UserViewHolder(
-        private val binding: ItemUserSelectionBinding
+    class UserViewHolder(
+        private val binding: ItemUserSelectionBinding,
+        private val onInteractionListener: OnInteractionListener
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(user: User) {
             binding.apply {
-                // Загрузка аватара
                 if (!user.avatar.isNullOrBlank()) {
-                    ivAvatar.load(user.avatar) {
-                        crossfade(true)
-                        placeholder(R.drawable.ic_avatar_placeholder)
-                        error(R.drawable.ic_avatar_placeholder)
+                    avatar.load(user.avatar) {
+                        placeholder(R.drawable.ic_default_avatar)
+                        error(R.drawable.ic_default_avatar)
+                        transformations(CircleCropTransformation())
                     }
                 } else {
-                    ivAvatar.setImageResource(R.drawable.ic_avatar_placeholder)
+                    avatar.setImageResource(R.drawable.ic_default_avatar)
                 }
 
-                // Имя и логин
-                tvName.text = user.name
-                tvLogin.text = "@${user.login}"
+                name.text = user.name
+                login.text = "@${user.login}"
 
-                // Состояние выбора
-                cbSelected.isChecked = selectedUsers.contains(user.id)
+                checkbox.isChecked = false
 
-                // Обработчик выбора
                 root.setOnClickListener {
-                    cbSelected.isChecked = !cbSelected.isChecked
-                }
-
-                cbSelected.setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        selectedUsers.add(user.id)
-                    } else {
-                        selectedUsers.remove(user.id)
-                    }
-                    onUserSelected(user, isChecked)
+                    checkbox.isChecked = !checkbox.isChecked
+                    onInteractionListener.onUserSelected(user, checkbox.isChecked)
                 }
             }
         }
     }
 
-    class UserDiffCallback : DiffUtil.ItemCallback<User>() {
-        override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
-            return oldItem.id == newItem.id
-        }
+    interface OnInteractionListener {
+        fun onUserSelected(user: User, isSelected: Boolean)
+    }
 
-        override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
-            return oldItem == newItem
-        }
+    class UserDiffCallback : DiffUtil.ItemCallback<User>() {
+        override fun areItemsTheSame(oldItem: User, newItem: User): Boolean =
+            oldItem.id == newItem.id
+
+        override fun areContentsTheSame(oldItem: User, newItem: User): Boolean =
+            oldItem == newItem
     }
 }

@@ -1,35 +1,28 @@
 package ru.netology.nework.api
 
-import ru.netology.nework.dto.Post
-import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
+import ru.netology.nework.dto.Post
 
 interface PostsApi {
     @GET("api/posts")
-    suspend fun getAll(): Response<List<Post>>
+    suspend fun getPosts(): Response<List<Post>>
 
     @GET("api/posts/{id}")
-    suspend fun getById(@Path("id") id: Long): Response<Post>
+    suspend fun getPostById(@Path("id") id: Long): Response<Post>
 
     @POST("api/posts")
-    suspend fun save(@Body post: Post): Response<Post>
+    suspend fun savePost(@Body post: Post): Response<Post>
+
+    @PUT("api/posts/{id}")
+    suspend fun updatePost(@Path("id") id: Long, @Body post: Post): Response<Post>
 
     @DELETE("api/posts/{id}")
-    suspend fun removeById(@Path("id") id: Long): Response<Unit>
+    suspend fun removePostById(@Path("id") id: Long): Response<Unit>
 
     @POST("api/posts/{id}/likes")
     suspend fun likeById(@Path("id") id: Long): Response<Post>
 
     @DELETE("api/posts/{id}/likes")
     suspend fun dislikeById(@Path("id") id: Long): Response<Post>
-
-    @Multipart
-    @POST("api/media")
-    suspend fun upload(@Part file: MultipartBody.Part): Response<MediaResponse>
 }
-
-data class MediaResponse(
-    val id: String,
-    val url: String
-)
