@@ -6,22 +6,42 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
+<<<<<<< HEAD
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
+=======
+    android:elevation="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+<<<<<<< HEAD
         android:padding="12dp">
 
         <ImageView
             android:id="@+id/ivAvatar"
             android:layout_width="48dp"
             android:layout_height="48dp"
+=======
+        android:padding="16dp">
+
+        <!-- Аватар автора -->
+        <ImageView
+            android:id="@+id/avatarImageView"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/circle_background"
+            android:scaleType="centerCrop"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             android:src="@drawable/ic_avatar_placeholder"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+<<<<<<< HEAD
         <TextView
             android:id="@+id/tvAuthorName"
             android:layout_width="0dp"
@@ -36,10 +56,31 @@
 
         <TextView
             android:id="@+id/tvPublished"
+=======
+        <!-- Имя автора -->
+        <TextView
+            android:id="@+id/authorNameTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            app:layout_constraintEnd_toStartOf="@id/menuImageView"
+            app:layout_constraintStart_toEndOf="@id/avatarImageView"
+            app:layout_constraintTop_toTopOf="@id/avatarImageView"
+            tools:text="Иван Иванов" />
+
+        <!-- Дата публикации -->
+        <TextView
+            android:id="@+id/publishedTextView"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="12sp"
             android:textColor="@android:color/darker_gray"
+<<<<<<< HEAD
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvAuthorName"
             app:layout_constraintTop_toBottomOf="@id/tvAuthorName"
@@ -50,10 +91,25 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_more"
+=======
+            app:layout_constraintEnd_toEndOf="@id/authorNameTextView"
+            app:layout_constraintStart_toStartOf="@id/authorNameTextView"
+            app:layout_constraintTop_toBottomOf="@id/authorNameTextView"
+            tools:text="15.03.2024 14:30" />
+
+        <!-- Кнопка меню -->
+        <ImageView
+            android:id="@+id/menuImageView"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_menu"
+            android:padding="4dp"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             android:background="?selectableItemBackgroundBorderless"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+<<<<<<< HEAD
         <TextView
             android:id="@+id/tvContent"
             android:layout_width="0dp"
@@ -108,11 +164,113 @@
 
             <TextView
                 android:id="@+id/tvLikesCount"
+=======
+        <!-- Текст поста -->
+        <TextView
+            android:id="@+id/contentTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:lineSpacingExtra="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/avatarImageView"
+            tools:text="Ищутся специалисты для работы над новым проектом. Требуется опыт работы с Kotlin и Android SDK. Подробности по ссылке ниже." />
+
+        <!-- Контейнер для вложения -->
+        <FrameLayout
+            android:id="@+id/attachmentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/contentTextView"
+            tools:visibility="visible">
+
+            <ImageView
+                android:id="@+id/attachmentImageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_image_placeholder" />
+
+            <ImageView
+                android:id="@+id/attachmentTypeIcon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circle_background_semi_transparent"
+                android:padding="12dp"
+                android:src="@drawable/ic_image" />
+
+        </FrameLayout>
+
+        <!-- Контейнер для ссылки -->
+        <LinearLayout
+            android:id="@+id/linkContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/link_background"
+            android:padding="12dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/attachmentContainer"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_link"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/linkTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/primary_color"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="https://example.com/vacancy" />
+
+        </LinearLayout>
+
+        <!-- Лайки -->
+        <LinearLayout
+            android:id="@+id/likeLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linkContainer">
+
+            <ImageView
+                android:id="@+id/likeImageView"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_like_outline" />
+
+            <TextView
+                android:id="@+id/likesCountTextView"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:textSize="14sp"
+<<<<<<< HEAD
                 android:gravity="center_vertical"
+=======
+                android:textColor="@android:color/darker_gray"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                 tools:text="42" />
 
         </LinearLayout>

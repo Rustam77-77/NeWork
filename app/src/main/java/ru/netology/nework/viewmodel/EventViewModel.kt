@@ -4,10 +4,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+<<<<<<< HEAD
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.netology.nework.dto.Event
 import ru.netology.nework.repository.EventRepository
+=======
+import ru.netology.nework.dto.Event
+import ru.netology.nework.repository.EventRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 import javax.inject.Inject
 
 @HiltViewModel
@@ -72,6 +79,10 @@ class EventViewModel @Inject constructor(
         viewModelScope.launch {
             val updatedEvent = eventRepository.likeEvent(event)
             if (updatedEvent != null) {
+<<<<<<< HEAD
+=======
+                // Обновляем выбранное событие, если это оно
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                 if (_selectedEvent.value?.id == event.id) {
                     _selectedEvent.postValue(updatedEvent)
                 }
@@ -83,7 +94,11 @@ class EventViewModel @Inject constructor(
         viewModelScope.launch {
             val success = eventRepository.removeEvent(event)
             if (success) {
+<<<<<<< HEAD
                 loadEvents()
+=======
+                loadEvents() // Перезагружаем список после удаления
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             }
         }
     }
@@ -92,7 +107,11 @@ class EventViewModel @Inject constructor(
         viewModelScope.launch {
             val savedEvent = eventRepository.saveEvent(event)
             if (savedEvent != null) {
+<<<<<<< HEAD
                 loadEvents()
+=======
+                loadEvents() // Перезагружаем список после сохранения
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             }
         }
     }

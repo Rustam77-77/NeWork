@@ -9,7 +9,11 @@
         <item name="colorOnSecondary">@color/black</item>
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
 
+<<<<<<< HEAD
         <!-- Важно: отключаем встроенный ActionBar, так как используем Toolbar -->
+=======
+        <!-- Добавляем поддержку ActionBar -->
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

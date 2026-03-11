@@ -52,6 +52,7 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun authenticate(login: String, password: String): Token {
+<<<<<<< HEAD
         try {
             val credentials = Credentials(login, password)
             val response = authApi.authentication(credentials)
@@ -65,10 +66,46 @@ class AuthRepository @Inject constructor(
             return token
         } catch (e: IOException) {
             throw AppError.NetworkError
+=======
+        return try {
+            println("Authenticating user: $login")
+
+            val credentials = Credentials(login, password)
+            val response = authApi.authentication(credentials)
+
+            println("Auth response code: ${response.code()}")
+
+            if (!response.isSuccessful) {
+                val errorBody = response.errorBody()?.string()
+                println("Auth error body: $errorBody")
+                throw AppError.ApiError(response.code(), errorBody ?: response.message())
+            }
+
+            val token = response.body()
+            if (token == null) {
+                println("Token is null")
+                throw AppError.UnknownError
+            }
+
+            println("Auth successful, token: ${token.token}")
+            saveAuthData(token, login, "")
+            token
+        } catch (e: IOException) {
+            println("Network error: ${e.message}")
+            throw AppError.NetworkError
+        } catch (e: AppError.ApiError) {
+            println("API error: ${e.code} - ${e.message}")
+            throw e
+        } catch (e: Exception) {
+            println("Unexpected error: ${e.message}")
+            e.printStackTrace()
+            throw AppError.UnknownError
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         }
     }
 
     suspend fun register(login: String, password: String, name: String): Token {
+<<<<<<< HEAD
         try {
             val credentials = RegisterCredentials(login, password, name)
             val response = authApi.registration(credentials)
@@ -82,6 +119,41 @@ class AuthRepository @Inject constructor(
             return token
         } catch (e: IOException) {
             throw AppError.NetworkError
+=======
+        return try {
+            println("Registering user: $login, name: $name")
+
+            val credentials = RegisterCredentials(login, password, name)
+            val response = authApi.registration(credentials)
+
+            println("Register response code: ${response.code()}")
+
+            if (!response.isSuccessful) {
+                val errorBody = response.errorBody()?.string()
+                println("Register error body: $errorBody")
+                throw AppError.ApiError(response.code(), errorBody ?: response.message())
+            }
+
+            val token = response.body()
+            if (token == null) {
+                println("Token is null")
+                throw AppError.UnknownError
+            }
+
+            println("Register successful, token: ${token.token}")
+            saveAuthData(token, login, name)
+            token
+        } catch (e: IOException) {
+            println("Network error: ${e.message}")
+            throw AppError.NetworkError
+        } catch (e: AppError.ApiError) {
+            println("API error: ${e.code} - ${e.message}")
+            throw e
+        } catch (e: Exception) {
+            println("Unexpected error: ${e.message}")
+            e.printStackTrace()
+            throw AppError.UnknownError
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         }
     }
 
@@ -91,6 +163,7 @@ class AuthRepository @Inject constructor(
         name: String,
         avatarPart: MultipartBody.Part
     ): Token {
+<<<<<<< HEAD
         try {
             val response = authApi.registerWithAvatar(login, password, name, avatarPart)
 
@@ -103,6 +176,40 @@ class AuthRepository @Inject constructor(
             return token
         } catch (e: IOException) {
             throw AppError.NetworkError
+=======
+        return try {
+            println("Registering user with avatar: $login, name: $name")
+
+            val response = authApi.registerWithAvatar(login, password, name, avatarPart)
+
+            println("Register with avatar response code: ${response.code()}")
+
+            if (!response.isSuccessful) {
+                val errorBody = response.errorBody()?.string()
+                println("Register error body: $errorBody")
+                throw AppError.ApiError(response.code(), errorBody ?: response.message())
+            }
+
+            val token = response.body()
+            if (token == null) {
+                println("Token is null")
+                throw AppError.UnknownError
+            }
+
+            println("Register successful, token: ${token.token}")
+            saveAuthData(token, login, name)
+            token
+        } catch (e: IOException) {
+            println("Network error: ${e.message}")
+            throw AppError.NetworkError
+        } catch (e: AppError.ApiError) {
+            println("API error: ${e.code} - ${e.message}")
+            throw e
+        } catch (e: Exception) {
+            println("Unexpected error: ${e.message}")
+            e.printStackTrace()
+            throw AppError.UnknownError
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         }
     }
 
@@ -142,4 +249,8 @@ class AuthRepository @Inject constructor(
         private const val KEY_USER_LOGIN = "user_login"
         private const val KEY_USER_NAME = "user_name"
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399

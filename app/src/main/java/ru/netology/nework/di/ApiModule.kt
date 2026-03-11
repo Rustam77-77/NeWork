@@ -1,5 +1,13 @@
 package ru.netology.nework.di
 
+<<<<<<< HEAD
+=======
+import ru.netology.nework.BuildConfig
+import ru.netology.nework.api.AuthApi
+import ru.netology.nework.api.EventsApi
+import ru.netology.nework.api.PostsApi
+import ru.netology.nework.api.UsersApi
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -10,11 +18,14 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+<<<<<<< HEAD
 import ru.netology.nework.BuildConfig
 import ru.netology.nework.api.AuthApi
 import ru.netology.nework.api.EventsApi
 import ru.netology.nework.api.PostsApi
 import ru.netology.nework.api.UsersApi
+=======
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -42,14 +53,27 @@ object ApiModule {
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+<<<<<<< HEAD
+=======
+            .addInterceptor(logging)
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             .addInterceptor { chain ->
                 val originalRequest = chain.request()
                 val requestBuilder = originalRequest.newBuilder()
                     .addHeader("Api-Key", BuildConfig.API_KEY)
+<<<<<<< HEAD
                 val request = requestBuilder.build()
                 chain.proceed(request)
             }
             .addInterceptor(logging)
+=======
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Accept", "application/json")
+
+                val request = requestBuilder.build()
+                chain.proceed(request)
+            }
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             .build()
     }
 

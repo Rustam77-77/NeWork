@@ -4,11 +4,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+<<<<<<< HEAD
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.netology.nework.dto.User
 import ru.netology.nework.dto.UserWithJobs
 import ru.netology.nework.repository.UserRepository
+=======
+import ru.netology.nework.dto.User
+import ru.netology.nework.dto.UserWithJobs
+import ru.netology.nework.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 import javax.inject.Inject
 
 @HiltViewModel
@@ -57,6 +65,7 @@ class UserViewModel @Inject constructor(
     fun getUserById(userId: Long) {
         viewModelScope.launch {
             _loading.value = true
+<<<<<<< HEAD
             try {
                 val testUser = UserWithJobs(
                     id = userId,
@@ -72,6 +81,18 @@ class UserViewModel @Inject constructor(
             } finally {
                 _loading.value = false
             }
+=======
+            // Временно создаем тестовые данные, пока не реализован API метод
+            val testUser = UserWithJobs(
+                id = userId,
+                login = "user$userId",
+                name = "User $userId",
+                avatar = null,
+                jobs = emptyList()
+            )
+            _selectedUser.postValue(testUser)
+            _loading.value = false
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         }
     }
 

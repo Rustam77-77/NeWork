@@ -25,6 +25,7 @@ class EventRepository @Inject constructor(
     suspend fun loadEvents() {
         _loading.value = true
         try {
+<<<<<<< HEAD
             val response = eventsApi.getAll()
             if (response.isSuccessful) {
                 val body = response.body()
@@ -36,12 +37,37 @@ class EventRepository @Inject constructor(
         } catch (e: IOException) {
             _error.value = "Ошибка сети. Проверьте подключение к интернету"
         } catch (e: Exception) {
+=======
+            println("Loading events from API...")
+            val response = eventsApi.getAll()
+            println("Response code: ${response.code()}")
+
+            if (response.isSuccessful) {
+                val eventsList = response.body()
+                println("Events loaded: ${eventsList?.size ?: 0}")
+
+                // Безопасная обработка - всегда сохраняем не-null список
+                _events.value = eventsList ?: emptyList()
+                _error.value = null
+            } else {
+                val errorBody = response.errorBody()?.string()
+                println("Error response: $errorBody")
+                _error.value = "Ошибка загрузки событий: ${response.code()}"
+            }
+        } catch (e: IOException) {
+            println("Network error: ${e.message}")
+            _error.value = "Ошибка сети. Проверьте подключение к интернету"
+        } catch (e: Exception) {
+            println("Unexpected error: ${e.message}")
+            e.printStackTrace()
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             _error.value = "Неизвестная ошибка: ${e.message}"
         } finally {
             _loading.value = false
         }
     }
 
+<<<<<<< HEAD
     suspend fun getEventById(id: Long): Event? {
         return try {
             val response = eventsApi.getById(id)
@@ -63,6 +89,11 @@ class EventRepository @Inject constructor(
     suspend fun likeEvent(event: Event): Event? {
         return try {
             val response = if (event.likedByMe == true) {
+=======
+    suspend fun likeEvent(event: Event): Event? {
+        return try {
+            val response = if (event.likedByMe) {
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                 eventsApi.dislikeById(event.id)
             } else {
                 eventsApi.likeById(event.id)
@@ -75,7 +106,11 @@ class EventRepository @Inject constructor(
                 }
                 updatedEvent
             } else {
+<<<<<<< HEAD
                 _error.value = "Ошибка при ${if (event.likedByMe == true) "снятии" else "постановке"} лайка: ${response.code()}"
+=======
+                _error.value = "Ошибка при ${if (event.likedByMe) "снятии" else "постановке"} лайка: ${response.code()}"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                 null
             }
         } catch (e: IOException) {
@@ -113,10 +148,18 @@ class EventRepository @Inject constructor(
                 val savedEvent = response.body()
                 if (savedEvent != null) {
                     if (event.id == 0L) {
+<<<<<<< HEAD
+=======
+                        // Новое событие - добавляем в список
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                         val currentList = _events.value.toMutableList()
                         currentList.add(0, savedEvent)
                         _events.value = currentList
                     } else {
+<<<<<<< HEAD
+=======
+                        // Обновление существующего события
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                         updateEventInList(savedEvent)
                     }
                 }
@@ -178,6 +221,27 @@ class EventRepository @Inject constructor(
         }
     }
 
+<<<<<<< HEAD
+=======
+    suspend fun getEventById(id: Long): Event? {
+        return try {
+            val response = eventsApi.getById(id)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                _error.value = "Ошибка при загрузке события: ${response.code()}"
+                null
+            }
+        } catch (e: IOException) {
+            _error.value = "Ошибка сети при загрузке события"
+            null
+        } catch (e: Exception) {
+            _error.value = "Неизвестная ошибка: ${e.message}"
+            null
+        }
+    }
+
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
     private fun updateEventInList(updatedEvent: Event) {
         val currentList = _events.value.toMutableList()
         val index = currentList.indexOfFirst { it.id == updatedEvent.id }
@@ -185,7 +249,13 @@ class EventRepository @Inject constructor(
             currentList[index] = updatedEvent
             _events.value = currentList
         } else {
+<<<<<<< HEAD
             val newList = mutableListOf(updatedEvent) + currentList
+=======
+            // Если события нет в списке, добавляем его в начало
+            val newList = mutableListOf(updatedEvent)
+            newList.addAll(currentList)
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             _events.value = newList
         }
     }

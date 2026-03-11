@@ -16,5 +16,9 @@ enum class AttachmentType {
 
 data class Attachment(
     val url: String,
+<<<<<<< HEAD
     val type: AttachmentType?  // Сделано nullable для безопасности
+=======
+    val type: AttachmentType
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 ) : Serializable

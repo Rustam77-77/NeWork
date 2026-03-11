@@ -11,7 +11,11 @@ import ru.netology.nework.databinding.ItemUserBinding
 import ru.netology.nework.dto.User
 
 class UserAdapter(
+<<<<<<< HEAD
     private val onItemClick: (User) -> Unit
+=======
+    private val onItemClickListener: (User) -> Unit
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 ) : ListAdapter<User, UserAdapter.UserViewHolder>(UserDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
@@ -33,13 +37,20 @@ class UserAdapter(
 
         fun bind(user: User) {
             binding.apply {
+<<<<<<< HEAD
                 if (!user.avatar.isNullOrBlank()) {
                     ivAvatar.load(user.avatar) {
+=======
+                // Загрузка аватара
+                if (!user.avatar.isNullOrBlank()) {
+                    avatarImageView.load(user.avatar) {
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                         crossfade(true)
                         placeholder(R.drawable.ic_avatar_placeholder)
                         error(R.drawable.ic_avatar_placeholder)
                     }
                 } else {
+<<<<<<< HEAD
                     ivAvatar.setImageResource(R.drawable.ic_avatar_placeholder)
                 }
 
@@ -47,6 +58,18 @@ class UserAdapter(
                 tvLogin.text = "@${user.login}"
 
                 root.setOnClickListener { onItemClick(user) }
+=======
+                    avatarImageView.setImageResource(R.drawable.ic_avatar_placeholder)
+                }
+
+                // Имя и логин
+                nameTextView.text = user.name
+                loginTextView.text = "@${user.login}"
+
+                root.setOnClickListener {
+                    onItemClickListener(user)
+                }
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             }
         }
     }

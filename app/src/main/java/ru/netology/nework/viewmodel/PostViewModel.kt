@@ -18,6 +18,12 @@ class PostViewModel @Inject constructor(
     private val _posts = MutableLiveData<List<Post>>()
     val posts: LiveData<List<Post>> = _posts
 
+<<<<<<< HEAD
+=======
+    private val _selectedPost = MutableLiveData<Post?>()
+    val selectedPost: LiveData<Post?> = _selectedPost
+
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> = _loading
 
@@ -50,6 +56,7 @@ class PostViewModel @Inject constructor(
         }
     }
 
+<<<<<<< HEAD
     fun likePost(post: Post) {
         viewModelScope.launch {
             postRepository.likePost(post)
@@ -59,6 +66,55 @@ class PostViewModel @Inject constructor(
     fun removePost(post: Post) {
         viewModelScope.launch {
             postRepository.removePost(post)
+=======
+    fun getPostById(postId: Long) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val post = postRepository.getPostById(postId)
+                _selectedPost.postValue(post)
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = "Ошибка загрузки поста: ${e.message}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    fun likePost(postId: Long, likedByMe: Boolean) {
+        viewModelScope.launch {
+            val updatedPost = if (likedByMe) {
+                postRepository.likeById(postId)
+            } else {
+                postRepository.dislikeById(postId)
+            }
+
+            if (updatedPost != null) {
+                // Обновляем выбранный пост, если это он
+                if (_selectedPost.value?.id == postId) {
+                    _selectedPost.postValue(updatedPost)
+                }
+            }
+        }
+    }
+
+    fun removePost(postId: Long) {
+        viewModelScope.launch {
+            val success = postRepository.removeById(postId)
+            if (success) {
+                loadPosts() // Перезагружаем список после удаления
+            }
+        }
+    }
+
+    fun savePost(post: Post) {
+        viewModelScope.launch {
+            val savedPost = postRepository.savePost(post)
+            if (savedPost != null) {
+                loadPosts() // Перезагружаем список после сохранения
+            }
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         }
     }
 

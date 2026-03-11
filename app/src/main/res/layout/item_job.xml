@@ -2,6 +2,10 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+<<<<<<< HEAD
+=======
+    xmlns:tools="http://schemas.android.com/tools"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="4dp"
@@ -14,27 +18,69 @@
         android:padding="12dp">
 
         <TextView
+<<<<<<< HEAD
             android:id="@+id/tvCompanyName"
+=======
+            android:id="@+id/companyTextView"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
+<<<<<<< HEAD
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tvPosition"
+=======
+            app:layout_constraintEnd_toStartOf="@id/editButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Google" />
+
+        <ImageView
+            android:id="@+id/editButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_edit"
+            android:padding="4dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toStartOf="@id/deleteButton"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/deleteButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_delete"
+            android:padding="4dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/positionTextView"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+<<<<<<< HEAD
             app:layout_constraintTop_toBottomOf="@id/tvCompanyName" />
 
         <TextView
             android:id="@+id/tvPeriod"
+=======
+            app:layout_constraintTop_toBottomOf="@id/companyTextView"
+            tools:text="Android Developer" />
+
+        <TextView
+            android:id="@+id/periodTextView"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -42,10 +88,18 @@
             android:textColor="@android:color/darker_gray"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+<<<<<<< HEAD
             app:layout_constraintTop_toBottomOf="@id/tvPosition" />
 
         <TextView
             android:id="@+id/tvLink"
+=======
+            app:layout_constraintTop_toBottomOf="@id/positionTextView"
+            tools:text="01 янв 2020 - 31 дек 2022" />
+
+        <TextView
+            android:id="@+id/linkTextView"
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
@@ -54,6 +108,7 @@
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+<<<<<<< HEAD
             app:layout_constraintTop_toBottomOf="@id/tvPeriod" />
 
         <LinearLayout
@@ -80,6 +135,11 @@
                 android:background="?selectableItemBackgroundBorderless" />
 
         </LinearLayout>
+=======
+            app:layout_constraintTop_toBottomOf="@id/periodTextView"
+            tools:text="https://company.com"
+            tools:visibility="visible" />
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

@@ -1,0 +1,65 @@
+name: Lint Check
+
+on:
+  # Запускается при push в ветки main/master
+  push:
+    branches: [ main, master ]
+
+  # Запускается при создании pull request
+  pull_request:
+    branches: [ main, master ]
+
+  # Можно запустить вручную
+  workflow_dispatch:
+
+jobs:
+  lint:
+    # Запускаем на Ubuntu
+    runs-on: ubuntu-latest
+
+    steps:
+      # Шаг 1: Клонируем репозиторий
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Шаг 2: Устанавливаем JDK 17
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Шаг 3: Настраиваем Gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # Шаг 4: Создаем gradle.properties с API ключом из секретов
+      - name: Create gradle.properties
+        run: |
+          echo "API_KEY=${{ secrets.API_KEY }}" > gradle.properties
+          echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8" >> gradle.properties
+          echo "android.useAndroidX=true" >> gradle.properties
+          echo "kotlin.code.style=official" >> gradle.properties
+          echo "android.overridePathCheck=true" >> gradle.properties
+
+      # Шаг 5: Даем права на выполнение gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Шаг 6: Запускаем lint проверку
+      - name: Run lint
+        run: ./gradlew lint
+
+      # Шаг 7: Сохраняем результаты lint
+      - name: Upload lint results
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-results
+          path: |
+            app/build/reports/lint-results.html
+            app/build/reports/lint-results.xml
+          if-no-files-found: warn
+
+      # Шаг 8: Проверяем, что сборка проходит
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug -x lint

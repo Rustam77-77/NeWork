@@ -7,15 +7,26 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+<<<<<<< HEAD
 import androidx.navigation.fragment.findNavController  // ВАЖНО: добавьте этот импорт!
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+=======
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentEventsBinding
 import ru.netology.nework.adapter.EventAdapter
 import ru.netology.nework.dto.Event
 import ru.netology.nework.viewmodel.EventViewModel
 import ru.netology.nework.viewmodel.AuthViewModel
+<<<<<<< HEAD
+=======
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 
 @AndroidEntryPoint
 class EventsFragment : Fragment() {
@@ -49,10 +60,14 @@ class EventsFragment : Fragment() {
 
     private fun setupRecyclerView() {
         eventAdapter = EventAdapter(
+<<<<<<< HEAD
             onItemClick = { event ->
                 openEventDetail(event)
             },
             onLikeClick = { event ->
+=======
+            onLikeClickListener = { event ->
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                 authViewModel.isAuthenticated.observe(viewLifecycleOwner) { isAuth ->
                     if (isAuth == true) {
                         eventViewModel.likeEvent(event)
@@ -61,12 +76,22 @@ class EventsFragment : Fragment() {
                     }
                 }
             },
+<<<<<<< HEAD
             onMenuClick = { event ->
+=======
+            onMenuClickListener = { event ->
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                 authViewModel.currentUserId.observe(viewLifecycleOwner) { userId ->
                     if (userId == event.authorId) {
                         showEventMenuDialog(event)
                     }
                 }
+<<<<<<< HEAD
+=======
+            },
+            onItemClickListener = { event ->
+                openEventDetail(event)
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
             }
         )
 

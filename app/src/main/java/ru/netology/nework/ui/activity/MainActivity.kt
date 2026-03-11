@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+<<<<<<< HEAD
         // ВАЖНО: Устанавливаем Toolbar как ActionBar
         setSupportActionBar(binding.toolbar)
 
@@ -30,6 +31,11 @@ class MainActivity : AppCompatActivity() {
             throw IllegalStateException("ActionBar not set - check your theme and toolbar setup")
         }
 
+=======
+        // Устанавливаем Toolbar как ActionBar
+        setSupportActionBar(binding.toolbar)
+
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         val navView: BottomNavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
 
@@ -42,7 +48,11 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
+<<<<<<< HEAD
         // Теперь это будет работать, так как ActionBar установлен
+=======
+        // Настраиваем ActionBar с NavController
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         setupActionBarWithNavController(navController, appBarConfiguration)
 
         // Настраиваем BottomNavigationView с NavController

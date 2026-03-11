@@ -4,10 +4,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+<<<<<<< HEAD
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.netology.nework.dto.Job
 import ru.netology.nework.repository.UserRepository
+=======
+import ru.netology.nework.dto.Job
+import ru.netology.nework.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 import javax.inject.Inject
 
 @HiltViewModel

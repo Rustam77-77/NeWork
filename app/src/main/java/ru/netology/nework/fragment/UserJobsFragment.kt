@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+<<<<<<< HEAD
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentUserJobsBinding
 import ru.netology.nework.adapter.JobAdapter
@@ -18,6 +19,15 @@ import ru.netology.nework.dto.Job
 import ru.netology.nework.viewmodel.UserJobsViewModel
 import ru.netology.nework.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+=======
+import dagger.hilt.android.AndroidEntryPoint
+import ru.netology.nework.R
+import ru.netology.nework.adapter.JobAdapter
+import ru.netology.nework.databinding.FragmentUserJobsBinding
+import ru.netology.nework.dto.Job
+import ru.netology.nework.viewmodel.AuthViewModel
+import ru.netology.nework.viewmodel.UserJobsViewModel
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 import java.util.*
 
 @AndroidEntryPoint
@@ -30,8 +40,18 @@ class UserJobsFragment : Fragment() {
     private val authViewModel: AuthViewModel by viewModels()
 
     private lateinit var jobAdapter: JobAdapter
+<<<<<<< HEAD
     private var isCurrentUser = false
     private var userId: Long = 0
+=======
+    private var userId: Long = 0
+    private var isCurrentUser = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        userId = arguments?.getLong("userId") ?: 0
+    }
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,10 +69,13 @@ class UserJobsFragment : Fragment() {
         setupListeners()
         setupObservers()
 
+<<<<<<< HEAD
         userId = (parentFragment as? UserDetailFragment)?.arguments?.getSerializable("user")?.let {
             (it as ru.netology.nework.dto.User).id
         } ?: 0
 
+=======
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         checkIfCurrentUser()
         jobsViewModel.loadUserJobs(userId)
     }
@@ -60,18 +83,34 @@ class UserJobsFragment : Fragment() {
     private fun checkIfCurrentUser() {
         authViewModel.currentUserId.observe(viewLifecycleOwner) { currentUserId ->
             isCurrentUser = currentUserId == userId
+<<<<<<< HEAD
             binding.fabAddJob.visibility = if (isCurrentUser) View.VISIBLE else View.GONE
+=======
+            if (isCurrentUser) {
+                binding.fabAddJob.visibility = View.VISIBLE
+            } else {
+                binding.fabAddJob.visibility = View.GONE
+            }
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         }
     }
 
     private fun setupRecyclerView() {
         jobAdapter = JobAdapter(
+<<<<<<< HEAD
             onDeleteClick = { job ->
+=======
+            onDeleteClickListener = { job ->
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                 if (isCurrentUser) {
                     showDeleteJobDialog(job)
                 }
             },
+<<<<<<< HEAD
             onEditClick = { job ->
+=======
+            onEditClickListener = { job ->
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
                 if (isCurrentUser) {
                     showEditJobDialog(job)
                 }
@@ -82,18 +121,52 @@ class UserJobsFragment : Fragment() {
             adapter = jobAdapter
             layoutManager = LinearLayoutManager(requireContext())
         }
+<<<<<<< HEAD
+=======
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            jobsViewModel.loadUserJobs(userId)
+        }
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
     }
 
     private fun setupListeners() {
         binding.fabAddJob.setOnClickListener {
+<<<<<<< HEAD
             findNavController().navigate(R.id.action_userJobsFragment_to_createJobFragment)
+=======
+            if (isCurrentUser) {
+                val bundle = Bundle().apply {
+                    putLong("userId", userId)
+                }
+                findNavController().navigate(R.id.action_userJobsFragment_to_createJobFragment, bundle)
+            }
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         }
     }
 
     private fun setupObservers() {
         jobsViewModel.jobs.observe(viewLifecycleOwner) { jobs ->
             jobAdapter.submitList(jobs)
+<<<<<<< HEAD
             binding.tvEmpty.visibility = if (jobs.isNullOrEmpty()) View.VISIBLE else View.GONE
+=======
+            binding.swipeRefreshLayout.isRefreshing = false
+
+            if (jobs.isNullOrEmpty()) {
+                binding.tvEmpty.visibility = View.VISIBLE
+            } else {
+                binding.tvEmpty.visibility = View.GONE
+            }
+        }
+
+        jobsViewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            if (isLoading == true && jobsViewModel.jobs.value.isNullOrEmpty()) {
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.progressBar.visibility = View.GONE
+            }
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
         }
 
         jobsViewModel.error.observe(viewLifecycleOwner) { errorMessage ->
@@ -172,8 +245,25 @@ class UserJobsFragment : Fragment() {
             .show()
     }
 
+<<<<<<< HEAD
+=======
+    companion object {
+        fun newInstance(userId: Long): UserJobsFragment {
+            val fragment = UserJobsFragment()
+            val args = Bundle()
+            args.putLong("userId", userId)
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> cb2f32b5efd911f0149b6369bdbce6453490a399
