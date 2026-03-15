@@ -15,8 +15,8 @@ class UserPagerAdapter(
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> UserWallFragment.newInstance(userId)
-            1 -> UserJobsFragment.newInstance(userId)
+            0 -> UserWallFragment.newInstance(userId)  // Должен быть такой метод
+            1 -> UserJobsFragment.newInstance(userId)   // Должен быть такой метод
             else -> throw IndexOutOfBoundsException()
         }
     }

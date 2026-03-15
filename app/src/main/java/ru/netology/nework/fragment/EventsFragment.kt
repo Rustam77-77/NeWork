@@ -1,45 +1,42 @@
 package ru.netology.nework.fragment
-
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
-import ru.netology.nework.databinding.FragmentEventsBinding
+import ru.netology.nework.R
+import ru.netology.nework.adapter.EventAdapter
 import ru.netology.nework.viewmodel.EventViewModel
-
 @AndroidEntryPoint
-class EventsFragment : Fragment() {
+class EventsFragment : Fragment(R.layout.fragment_events) {
+    private val viewModel: EventViewModel by viewModels()
+    override fun onViewCreated(view: View, bundle: Bundle?) {
+        super.onViewCreated(view, bundle)
 
-    private var _binding: FragmentEventsBinding? = null
-    private val binding get() = _binding!!
+        // 1. Находим RecyclerView через ID напрямую.
+        // Убедитесь, что в res/layout/fragment_events.xml ID установлен как android:id="@+id/list"
+        val recyclerView = view.findViewById<RecyclerView>(R.id.list)
 
-    private val eventViewModel: EventViewModel by viewModels()
+        // 2. Инициализируем адаптер
+        val adapter = EventAdapter()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentEventsBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        eventViewModel.events.observe(viewLifecycleOwner) { events ->
-            // TODO: Set adapter
+        // 3. Устанавливаем адаптер в список
+        recyclerView?.adapter = adapter
+        // 4. Подписываемся на данные из ViewModel
+        viewModel.events.observe(viewLifecycleOwner) { events ->
+            // Когда данные пришли, отправляем их в адаптер
+            adapter.submitList(events)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+        // 5. Обработка ошибок (если во ViewModel есть LiveData для ошибок)
+        viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
+            if (errorMessage != null) {
+                Toast.makeText(requireContext(), "Ошибка: $errorMessage", Toast.LENGTH_LONG).show()
+            }
+        }
+        // 6. Загружаем данные с сервера
+        viewModel.loadEvents()
     }
 }

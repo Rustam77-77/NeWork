@@ -1,60 +1,41 @@
 package ru.netology.nework.fragment
-
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
-import ru.netology.nework.databinding.FragmentRegisterBinding
+import ru.netology.nework.R
 import ru.netology.nework.viewmodel.AuthViewModel
-
 @AndroidEntryPoint
-class RegisterFragment : Fragment() {
-
-    private var _binding: FragmentRegisterBinding? = null
-    private val binding get() = _binding!!
-
-    private val authViewModel: AuthViewModel by viewModels()
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
+class RegisterFragment : Fragment(R.layout.fragment_register) {
+    private val viewModel: AuthViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.btnRegister.setOnClickListener {
-            val login = binding.etLogin.text.toString()
-            val password = binding.etPassword.text.toString()
-            val name = binding.etName.text.toString()
-
-            if (login.isNotBlank() && password.isNotBlank() && name.isNotBlank()) {
-                authViewModel.register(login, password, name)
+        // Находим вью через findViewById напрямую из ресурсов
+        val nameField = view.findViewById<EditText>(R.id.nameField)
+        val loginField = view.findViewById<EditText>(R.id.loginField)
+        val passwordField = view.findViewById<EditText>(R.id.passwordField)
+        val registerButton = view.findViewById<MaterialButton>(R.id.registerButton)
+        registerButton?.setOnClickListener {
+            val name = nameField?.text?.toString() ?: ""
+            val login = loginField?.text?.toString() ?: ""
+            val pass = passwordField?.text?.toString() ?: ""
+            if (name.isBlank() || login.isBlank() || pass.isBlank()) {
+                Toast.makeText(requireContext(), "Заполните все поля!", Toast.LENGTH_SHORT).show()
+            } else {
+                // Передаем все три параметра в ViewModel
+                viewModel.register(login, pass, name)
             }
         }
-
-        binding.tvLogin.setOnClickListener {
-            findNavController().navigateUp()
-        }
-
-        authViewModel.regError.observe(viewLifecycleOwner) { error ->
-            error?.let {
-                binding.tvError.text = it
-                binding.tvError.visibility = View.VISIBLE
+        // Следим за состоянием авторизации
+        viewModel.authorized.observe(viewLifecycleOwner) { auth ->
+            if (auth?.token != null) {
+                findNavController().navigateUp()
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

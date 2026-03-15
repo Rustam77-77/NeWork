@@ -1,77 +1,29 @@
 package ru.netology.nework.viewmodel
-
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import ru.netology.nework.dto.Token
-import ru.netology.nework.dto.User
-import ru.netology.nework.model.AuthState
+import ru.netology.nework.dto.AuthState
 import ru.netology.nework.repository.AuthRepository
 import javax.inject.Inject
-
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val repository: AuthRepository
 ) : ViewModel() {
-
-    val authorized: LiveData<Boolean> = authRepository.authorized
-    val user: LiveData<User?> = authRepository.user
-    val token: LiveData<Token?> = authRepository.token
-    val authError: LiveData<String?> = authRepository.authError
-    val regError: LiveData<String?> = authRepository.regError
-    val currentUserId: LiveData<Long?> = authRepository.currentUserId
-    val isAuthenticated: LiveData<Boolean> = authRepository.isAuthenticated
-
-    private val _authState = MutableLiveData<AuthState>(AuthState.IDLE)
-    val authState: LiveData<AuthState> = _authState
-
-    fun authenticate(login: String, pass: String) {
-        _authState.value = AuthState.LOADING
-        viewModelScope.launch {
-            val result = authRepository.authenticate(login, pass)
-            if (result.isSuccess) {
-                _authState.value = AuthState.SUCCESS
-            } else {
-                _authState.value = AuthState.ERROR
-            }
+    private val _authorized = MutableLiveData<AuthState?>(null)
+    val authorized: LiveData<AuthState?> = _authorized
+    fun login(login: String, pass: String) = viewModelScope.launch {
+        try {
+            _authorized.value = repository.authenticate(login, pass)
+        } catch (e: Exception) {
+            // Обработка ошибки
         }
     }
-
-    fun register(login: String, pass: String, name: String) {
-        _authState.value = AuthState.LOADING
-        viewModelScope.launch {
-            val result = authRepository.register(login, pass, name)
-            if (result.isSuccess) {
-                _authState.value = AuthState.SUCCESS
-            } else {
-                _authState.value = AuthState.ERROR
-            }
+    // ДОБАВЛЯЕМ ЭТОТ МЕТОД
+    fun register(login: String, pass: String, name: String) = viewModelScope.launch {
+        try {
+            _authorized.value = repository.register(login, pass, name)
+        } catch (e: Exception) {
+            // Обработка ошибки
         }
-    }
-
-    fun getUserById(id: String) {
-        viewModelScope.launch {
-            authRepository.getUserById(id)
-        }
-    }
-
-    fun logout() {
-        authRepository.logout()
-        _authState.value = AuthState.IDLE
-    }
-
-    fun clearAuthError() {
-        authRepository.clearAuthError()
-    }
-
-    fun clearRegError() {
-        authRepository.clearRegError()
-    }
-
-    fun clearError() {
-        authRepository.clearError()
     }
 }

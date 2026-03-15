@@ -1,54 +1,39 @@
 package ru.netology.nework.viewmodel
-
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.netology.nework.dto.Event
 import ru.netology.nework.repository.EventRepository
 import javax.inject.Inject
-
 @HiltViewModel
 class EventViewModel @Inject constructor(
-    private val eventRepository: EventRepository
+    private val repository: EventRepository
 ) : ViewModel() {
-
-    val events: LiveData<List<Event>> = eventRepository.events
-    val loading: LiveData<Boolean> = eventRepository.loading
-    val error: LiveData<String?> = eventRepository.error
-
-    fun loadEvents() {
-        eventRepository.loadEvents()
-    }
-
-    fun clearError() {
-        eventRepository.clearError()
-    }
-
-    fun likeEvent(event: Event) {
-        viewModelScope.launch {
-            if (event.likedByMe == true) {
-                eventRepository.dislikeById(event.id)
-            } else {
-                eventRepository.likeById(event.id)
-            }
+    private val _events = MutableLiveData<List<Event>>()
+    val events: LiveData<List<Event>> = _events
+    private val _error = MutableLiveData<String?>(null)
+    val error: LiveData<String?> = _error
+    fun loadEvents() = viewModelScope.launch {
+        try {
+            _events.value = repository.getAll()
+        } catch (e: Exception) {
+            _error.value = e.message
         }
     }
-
-    fun participateEvent(event: Event) {
-        viewModelScope.launch {
-            if (event.participatedByMe == true) {
-                eventRepository.leaveEvent(event.id)
-            } else {
-                eventRepository.participateInEvent(event.id)
-            }
+    fun likeById(id: Long) = viewModelScope.launch {
+        try {
+            repository.likeById(id) // Раньше id игнорировался
+            loadEvents() // Обновляем список после лайка
+        } catch (e: Exception) {
+            _error.value = e.message
         }
     }
-
-    fun removeEvent(event: Event) {
-        viewModelScope.launch {
-            eventRepository.removeEventById(event.id)
+    fun removeById(id: Long) = viewModelScope.launch {
+        try {
+            repository.removeById(id) // Раньше id игнорировался
+            loadEvents()
+        } catch (e: Exception) {
+            _error.value = e.message
         }
     }
 }

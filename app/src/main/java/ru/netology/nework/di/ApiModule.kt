@@ -1,7 +1,4 @@
 package ru.netology.nework.di
-
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,77 +7,41 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import ru.netology.nework.api.*
-import ru.netology.nework.BuildConfig
-import java.util.concurrent.TimeUnit
+import retrofit2.create
+import ru.netology.nework.api.ApiService
+import ru.netology.nework.api.PostsApi
+import ru.netology.nework.api.UsersApi
 import javax.inject.Singleton
-
 @Module
 @InstallIn(SingletonComponent::class)
 object ApiModule {
-
-    private const val BASE_URL = "http://94.228.125.136:8080/"
-
+    private const val BASE_URL = "http://94.228.125.136:8080/api/"
     @Provides
     @Singleton
-    fun provideGson(): Gson {
-        return GsonBuilder()
-            .setLenient()
-            .create()
+    fun provideLogging(): HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
     }
-
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        val interceptor = HttpLoggingInterceptor()
-        interceptor.level = if (BuildConfig.DEBUG) {
-            HttpLoggingInterceptor.Level.BODY
-        } else {
-            HttpLoggingInterceptor.Level.NONE
-        }
-
-        return OkHttpClient.Builder()
-            .addInterceptor(interceptor)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
-
+    fun provideOkHttp(logging: HttpLoggingInterceptor): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(logging)
+        .build()
     @Provides
     @Singleton
-    fun provideRetrofit(
-        gson: Gson,
-        okHttpClient: OkHttpClient
-    ): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-    }
-
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .addConverterFactory(GsonConverterFactory.create())
+        .baseUrl(BASE_URL)
+        .client(okHttpClient)
+        .build()
     @Provides
     @Singleton
-    fun providePostsApi(retrofit: Retrofit): PostsApi {
-        return retrofit.create(PostsApi::class.java)
-    }
-
+    fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create()
+    // ДОБАВЛЕНО: Hilt теперь знает, как создать PostsApi
     @Provides
     @Singleton
-    fun provideAuthApi(retrofit: Retrofit): AuthApi {
-        return retrofit.create(AuthApi::class.java)
-    }
-
+    fun providePostsApi(retrofit: Retrofit): PostsApi = retrofit.create()
+    // ДОБАВЛЕНО: Hilt теперь знает, как создать UsersApi
     @Provides
     @Singleton
-    fun provideEventsApi(retrofit: Retrofit): EventsApi {
-        return retrofit.create(EventsApi::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideUsersApi(retrofit: Retrofit): UsersApi {
-        return retrofit.create(UsersApi::class.java)
-    }
+    fun provideUsersApi(retrofit: Retrofit): UsersApi = retrofit.create()
 }

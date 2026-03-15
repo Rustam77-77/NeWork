@@ -1,22 +1,25 @@
 package ru.netology.nework.viewmodel
-
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ru.netology.nework.dto.Post
+import kotlinx.coroutines.launch
 import ru.netology.nework.repository.PostRepository
+import ru.netology.nework.util.SingleLiveEvent
 import javax.inject.Inject
-
 @HiltViewModel
 class PostViewModel @Inject constructor(
-    private val postRepository: PostRepository
+    private val repository: PostRepository
 ) : ViewModel() {
-
-    val posts: LiveData<List<Post>> = postRepository.posts
-    val loading: LiveData<Boolean> = postRepository.loading
-    val error: LiveData<String?> = postRepository.error
-
-    fun loadPosts() {
-        postRepository.loadPosts()
+    val postCreated = SingleLiveEvent<Unit>()
+    private val _postContent = MutableLiveData<String>("")
+    fun changeContent(content: String) {
+        _postContent.value = content
+    }
+    fun save() = viewModelScope.launch {
+        try {
+            // repository.save(_postContent.value ?: "") // Раскомментируйте, если метод в репозитории готов
+            postCreated.value = Unit
+        } catch (e: Exception) {
+            // Ошибка сохранения
+        }
     }
 }
