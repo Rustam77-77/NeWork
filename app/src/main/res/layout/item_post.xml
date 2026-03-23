@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_margin="4dp"
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
 
@@ -14,40 +13,40 @@
         android:layout_height="wrap_content"
         android:padding="12dp">
 
-        <ImageView
-            android:id="@+id/ivAvatar"
+        <TextView
+            android:id="@+id/avatarText"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/ic_avatar_placeholder"
-            android:scaleType="centerCrop"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="@drawable/circle_avatar_background"
+            android:textColor="@android:color/white"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tvAuthorName"
+            android:id="@+id/authorName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/ivAvatar"
-            app:layout_constraintTop_toTopOf="@id/ivAvatar"
-            tools:text="Иван Иванов" />
+            app:layout_constraintEnd_toStartOf="@+id/menuButton"
+            app:layout_constraintStart_toEndOf="@+id/avatarText"
+            app:layout_constraintTop_toTopOf="@+id/avatarText" />
 
         <TextView
-            android:id="@+id/tvPublished"
+            android:id="@+id/date"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="12sp"
             android:textColor="@android:color/darker_gray"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/tvAuthorName"
-            app:layout_constraintTop_toBottomOf="@id/tvAuthorName"
-            tools:text="10.03.2026 12:00" />
+            app:layout_constraintStart_toStartOf="@+id/authorName"
+            app:layout_constraintTop_toBottomOf="@+id/authorName" />
 
         <ImageButton
-            android:id="@+id/btnMenu"
+            android:id="@+id/menuButton"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_more"
@@ -56,67 +55,69 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tvContent"
+            android:id="@+id/content"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivAvatar"
-            tools:text="Содержание поста" />
-
-        <ImageView
-            android:id="@+id/ivAttachment"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="8dp"
-            android:scaleType="centerCrop"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/tvContent"
-            tools:src="@drawable/ic_image_placeholder"
-            tools:visibility="visible" />
-
-        <TextView
-            android:id="@+id/tvLink"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textColor="@android:color/holo_blue_dark"
-            android:textSize="14sp"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivAttachment"
-            tools:text="https://example.com"
-            tools:visibility="visible" />
+            app:layout_constraintTop_toBottomOf="@+id/avatarText" />
 
         <LinearLayout
-            android:id="@+id/layoutLikes"
+            android:id="@+id/linkContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:background="?selectableItemBackground"
+            android:padding="8dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/content">
+
+            <TextView
+                android:id="@+id/linkText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="#FF6200EE"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_menu_send" />
+
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvLink">
+            app:layout_constraintTop_toBottomOf="@+id/linkContainer">
 
-            <ImageButton
-                android:id="@+id/btnLike"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_like_outline"
+            <CheckBox
+                android:id="@+id/likeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@drawable/ic_like_selector"
                 android:background="?selectableItemBackgroundBorderless" />
 
             <TextView
-                android:id="@+id/tvLikesCount"
+                android:id="@+id/likeCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:textSize="14sp"
-                android:gravity="center_vertical"
-                tools:text="42" />
+                android:layout_gravity="center_vertical"
+                android:text="0"
+                android:textSize="12sp" />
 
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
-        android:id="@+id/navigation_posts"
-        android:icon="@android:drawable/ic_menu_agenda"
+        android:id="@+id/postsFragment"
+        android:icon="@android:drawable/ic_menu_gallery"
         android:title="Посты" />
-
     <item
-        android:id="@+id/navigation_events"
-        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:id="@+id/eventsFragment"
+        android:icon="@android:drawable/ic_menu_agenda"
         android:title="События" />
-
     <item
-        android:id="@+id/navigation_users"
-        android:icon="@android:drawable/ic_menu_myplaces"
+        android:id="@+id/usersFragment"
+        android:icon="@android:drawable/ic_menu_manage"
         android:title="Пользователи" />
-
 </menu>

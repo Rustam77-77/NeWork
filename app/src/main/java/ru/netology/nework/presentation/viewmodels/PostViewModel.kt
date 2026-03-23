@@ -1,0 +1,182 @@
+package ru.netology.nework.presentation.viewmodels
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import ru.netology.nework.data.repository.PostRepository
+import ru.netology.nework.dto.Post
+import java.util.Date
+import javax.inject.Inject
+
+@HiltViewModel
+class PostViewModel @Inject constructor(
+    private val postRepository: PostRepository
+) : ViewModel() {
+
+    private val _posts = MutableLiveData<List<Post>>(emptyList())
+    val posts: LiveData<List<Post>> = _posts
+
+    private val _post = MutableLiveData<Post?>()
+    val post: LiveData<Post?> = _post
+
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
+    private val _isRefreshing = MutableLiveData(false)
+    val isRefreshing: LiveData<Boolean> = _isRefreshing
+
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?> = _error
+
+    private val _isCreated = MutableLiveData(false)
+    val isCreated: LiveData<Boolean> = _isCreated
+
+    private val _isDeleted = MutableLiveData(false)
+    val isDeleted: LiveData<Boolean> = _isDeleted
+
+    fun loadPosts() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                postRepository.getAllPosts().collect { postList ->
+                    _posts.value = postList
+                }
+            } catch (e: Exception) {
+                _error.value = "Ошибка загрузки постов: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun loadPostById(postId: Long) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                postRepository.getPostById(postId).collect { post ->
+                    _post.value = post
+                }
+            } catch (e: Exception) {
+                _error.value = "Ошибка загрузки поста: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun refreshPosts() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                postRepository.refreshPosts()
+            } catch (e: Exception) {
+                _error.value = "Ошибка обновления постов: ${e.message}"
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
+    }
+
+    fun likePost(post: Post) {
+        viewModelScope.launch {
+            try {
+                val updatedPost = if (post.likedByMe) {
+                    postRepository.unlikePost(post.id)
+                } else {
+                    postRepository.likePost(post.id)
+                }
+                if (updatedPost != null) {
+                    refreshPosts()
+                }
+            } catch (e: Exception) {
+                _error.value = "Ошибка при лайке поста"
+            }
+        }
+    }
+
+    fun createPost(content: String, mentionedUsers: List<Long>, authorId: Long, authorName: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _isCreated.value = false
+            try {
+                val post = Post(
+                    id = 0,
+                    authorId = authorId,
+                    authorName = authorName,
+                    content = content,
+                    published = Date(),
+                    mentionedUsers = mentionedUsers
+                )
+                val result = postRepository.savePost(post)
+                if (result != null) {
+                    _isCreated.value = true
+                    refreshPosts()
+                } else {
+                    _error.value = "Ошибка создания поста"
+                }
+            } catch (e: Exception) {
+                _error.value = "Ошибка создания поста: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun updatePost(postId: Long, content: String, mentionedUsers: List<Long>) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val currentPosts = _posts.value ?: emptyList()
+                val existingPost = currentPosts.find { it.id == postId }
+                if (existingPost != null) {
+                    val updatedPost = existingPost.copy(
+                        content = content,
+                        mentionedUsers = mentionedUsers
+                    )
+                    val result = postRepository.savePost(updatedPost)
+                    if (result != null) {
+                        refreshPosts()
+                    } else {
+                        _error.value = "Ошибка обновления поста"
+                    }
+                }
+            } catch (e: Exception) {
+                _error.value = "Ошибка обновления поста: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun deletePost(postId: Long) {
+        viewModelScope.launch {
+            _isDeleted.value = false
+            try {
+                val result = postRepository.deletePost(postId)
+                if (result) {
+                    _isDeleted.value = true
+                    refreshPosts()
+                } else {
+                    _error.value = "Ошибка удаления поста"
+                }
+            } catch (e: Exception) {
+                _error.value = "Ошибка удаления поста: ${e.message}"
+            }
+        }
+    }
+
+    fun clearError() {
+        _error.value = null
+    }
+
+    fun clearCreated() {
+        _isCreated.value = false
+    }
+
+    fun clearDeleted() {
+        _isDeleted.value = false
+    }
+}

@@ -1,40 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16.dp">
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Вход"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/loginLayout"
+        android:id="@+id/textInputLayoutLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64.dp"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_marginTop="32dp"
+        android:hint="Логин"
+        app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
+
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/loginField"
+            android:id="@+id/editTextLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Логин"/>
+            android:inputType="text" />
+
     </com.google.android.material.textfield.TextInputLayout>
+
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/passwordLayout"
+        android:id="@+id/textInputLayoutPassword"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16.dp"
-        app:layout_constraintTop_toBottomOf="@id/loginLayout"
-        app:passwordToggleEnabled="true">
+        android:layout_marginTop="16dp"
+        android:hint="Пароль"
+        app:passwordToggleEnabled="true"
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayoutLogin">
+
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/passwordField"
+            android:id="@+id/editTextPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Пароль"
-            android:inputType="textPassword"/>
+            android:inputType="textPassword" />
+
     </com.google.android.material.textfield.TextInputLayout>
+
     <Button
-        android:id="@+id/loginButton"
+        android:id="@+id/buttonLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24.dp"
+        android:layout_marginTop="24dp"
         android:text="Войти"
-        app:layout_constraintTop_toBottomOf="@id/passwordLayout"/>
+        android:enabled="false"
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayoutPassword" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/buttonLogin"
+        app:layout_constraintEnd_toEndOf="@+id/buttonLogin"
+        app:layout_constraintStart_toStartOf="@+id/buttonLogin"
+        app:layout_constraintTop_toTopOf="@+id/buttonLogin" />
+
+    <TextView
+        android:id="@+id/textViewRegisterLink"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Нет аккаунта? Зарегистрируйтесь"
+        android:textColor="#FF6200EE"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonLogin" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,65 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp"
-        tools:context=".fragment.CreateEventFragment">
+        android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/contentLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:boxBackgroundMode="outline">
+            android:hint="Описание события"
+            app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etTitle"
+                android:id="@+id/eventContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Заголовок события"
-                android:inputType="text" />
+                android:minHeight="100dp"
+                android:gravity="top"
+                android:maxLines="10" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/typeLabel"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:boxBackgroundMode="outline">
+            android:text="Тип события:"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/contentLayout"
+            app:layout_constraintStart_toStartOf="parent" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etContent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Описание события"
-                android:inputType="textMultiLine"
-                android:minLines="4" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <RadioGroup
+            android:id="@+id/typeGroup"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="end">
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/typeLabel"
+            app:layout_constraintStart_toStartOf="parent">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCancel"
+            <RadioButton
+                android:id="@+id/onlineRadio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Отмена"
-                style="@style/Widget.Material3.Button.TextButton" />
+                android:text="Онлайн"
+                android:checked="true" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSave"
+            <RadioButton
+                android:id="@+id/offlineRadio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="Сохранить" />
+                android:text="Офлайн"
+                android:layout_marginStart="16dp" />
+        </RadioGroup>
 
-        </LinearLayout>
+        <Button
+            android:id="@+id/selectDateButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Выбрать дату проведения"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/typeGroup" />
 
-    </LinearLayout>
-</layout>
+        <TextView
+            android:id="@+id/selectedDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Дата не выбрана"
+            android:padding="8dp"
+            android:textSize="14sp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/selectDateButton" />
+
+        <Button
+            android:id="@+id/selectSpeakersButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Выбрать спикеров"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/selectedDate" />
+
+        <TextView
+            android:id="@+id/selectedSpeakersCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Спикеры не выбраны"
+            android:padding="8dp"
+            android:textSize="12sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/selectSpeakersButton" />
+
+        <Button
+            android:id="@+id/selectParticipantsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Выбрать участников"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/selectedSpeakersCount" />
+
+        <TextView
+            android:id="@+id/selectedParticipantsCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Участники не выбраны"
+            android:padding="8dp"
+            android:textSize="12sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/selectParticipantsButton" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/selectedParticipantsCount"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

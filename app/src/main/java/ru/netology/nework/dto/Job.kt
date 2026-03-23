@@ -1,15 +1,12 @@
 package ru.netology.nework.dto
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import java.util.Date
 
-@Parcelize
 data class Job(
     val id: Long,
-    val name: String,
+    val userId: Long,
+    val company: String,
     val position: String,
-    val start: String,
-    val finish: String?,
-    val link: String?,
-    val ownedByMe: Boolean = false
-) : Parcelable
+    val startDate: Date,
+    val endDate: Date? = null
+)

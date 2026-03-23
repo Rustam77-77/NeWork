@@ -3,21 +3,163 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mainFragment">
+    app:startDestination="@id/postsFragment">
+
+    <!-- Основные фрагменты для Bottom Navigation -->
+    <fragment
+        android:id="@+id/postsFragment"
+        android:name="ru.netology.nework.presentation.fragments.PostsFragment"
+        android:label="Посты"
+        tools:layout="@layout/fragment_posts">
+
+        <action
+            android:id="@+id/action_postsFragment_to_postDetailFragment"
+            app:destination="@id/postDetailFragment" />
+
+        <action
+            android:id="@+id/action_postsFragment_to_createPostFragment"
+            app:destination="@id/createPostFragment" />
+
+        <action
+            android:id="@+id/action_postsFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+
+    </fragment>
 
     <fragment
-        android:id="@+id/mainFragment"
-        android:name="ru.netology.nework.ui.MainFragment"
-        android:label="Главная"
-        tools:layout="@layout/fragment_main" />
+        android:id="@+id/eventsFragment"
+        android:name="ru.netology.nework.presentation.fragments.EventsFragment"
+        android:label="События"
+        tools:layout="@layout/fragment_events">
 
-    <!-- Добавьте другие фрагменты по мере необходимости -->
-    <!--
+        <action
+            android:id="@+id/action_eventsFragment_to_eventDetailFragment"
+            app:destination="@id/eventDetailFragment" />
+
+        <action
+            android:id="@+id/action_eventsFragment_to_createEventFragment"
+            app:destination="@id/createEventFragment" />
+
+        <action
+            android:id="@+id/action_eventsFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+
+    </fragment>
+
     <fragment
-        android:id="@+id/postFragment"
-        android:name="ru.netology.nework.ui.PostFragment"
-        android:label="Пост"
-        tools:layout="@layout/fragment_post" />
-    -->
+        android:id="@+id/usersFragment"
+        android:name="ru.netology.nework.presentation.fragments.UsersFragment"
+        android:label="Пользователи"
+        tools:layout="@layout/fragment_users">
+
+        <action
+            android:id="@+id/action_usersFragment_to_userDetailFragment"
+            app:destination="@id/userDetailFragment" />
+
+    </fragment>
+
+    <!-- Детальные фрагменты -->
+    <fragment
+        android:id="@+id/postDetailFragment"
+        android:name="ru.netology.nework.presentation.fragments.PostDetailFragment"
+        android:label="Детали поста"
+        tools:layout="@layout/fragment_post_detail">
+
+        <argument
+            android:name="postId"
+            app:argType="long" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/eventDetailFragment"
+        android:name="ru.netology.nework.presentation.fragments.EventDetailFragment"
+        android:label="Детали события"
+        tools:layout="@layout/fragment_event_detail">
+
+        <argument
+            android:name="eventId"
+            app:argType="long" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/userDetailFragment"
+        android:name="ru.netology.nework.presentation.fragments.UserDetailFragment"
+        android:label="Профиль пользователя"
+        tools:layout="@layout/fragment_user_detail">
+
+        <argument
+            android:name="userId"
+            app:argType="long" />
+
+    </fragment>
+
+    <!-- Фрагменты создания/редактирования -->
+    <fragment
+        android:id="@+id/createPostFragment"
+        android:name="ru.netology.nework.presentation.fragments.CreatePostFragment"
+        android:label="Создание поста"
+        tools:layout="@layout/fragment_create_post">
+
+        <argument
+            android:name="postId"
+            android:defaultValue="0L"
+            app:argType="long" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/createEventFragment"
+        android:name="ru.netology.nework.presentation.fragments.CreateEventFragment"
+        android:label="Создание события"
+        tools:layout="@layout/fragment_create_event">
+
+        <argument
+            android:name="eventId"
+            android:defaultValue="0L"
+            app:argType="long" />
+
+    </fragment>
+
+    <!-- Фрагменты аутентификации -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="ru.netology.nework.presentation.fragments.LoginFragment"
+        android:label="Вход"
+        tools:layout="@layout/fragment_login">
+
+        <action
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="ru.netology.nework.presentation.fragments.RegisterFragment"
+        android:label="Регистрация"
+        tools:layout="@layout/fragment_register">
+
+        <action
+            android:id="@+id/action_registerFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+
+    </fragment>
+
+    <!-- Фрагмент профиля (свой профиль) -->
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="ru.netology.nework.presentation.fragments.ProfileFragment"
+        android:label="Мой профиль"
+        tools:layout="@layout/fragment_profile">
+
+        <argument
+            android:name="userId"
+            app:argType="long" />
+
+    </fragment>
 
 </navigation>

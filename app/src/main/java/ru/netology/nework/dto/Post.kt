@@ -1,23 +1,17 @@
 package ru.netology.nework.dto
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import java.util.Date
 
-@Parcelize
 data class Post(
     val id: Long,
     val authorId: Long,
-    val author: String,
-    val authorAvatar: String?,
-    val authorJob: String?,
+    val authorName: String,
+    val authorAvatar: String? = null,
     val content: String,
-    val published: String,
-    val coords: Coordinates?,
-    val link: String?,
-    val likeOwnerIds: List<Long>?,
-    val likedByMe: Boolean?,
-    val ownedByMe: Boolean?,
-    val attachment: Attachment?,
-    val mentionIds: List<Long>?,
-    val mentionedMe: Boolean?
-) : Parcelable
+    val published: Date,
+    val likedByMe: Boolean = false,
+    val likesCount: Int = 0,
+    val link: String? = null,
+    val mentionedUsers: List<Long> = emptyList(),
+    val authorJob: String? = null
+)

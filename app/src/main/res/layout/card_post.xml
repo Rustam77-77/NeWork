@@ -1,114 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
 
-    <androidx.cardview.widget.CardView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="4dp">
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/avatarText"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="@drawable/circle_avatar_background"
+            android:textColor="@android:color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/authorName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/menuButton"
+            app:layout_constraintStart_toEndOf="@+id/avatarText"
+            app:layout_constraintTop_toTopOf="@+id/avatarText" />
+
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@android:color/darker_gray"
+            app:layout_constraintStart_toStartOf="@+id/authorName"
+            app:layout_constraintTop_toBottomOf="@+id/authorName" />
+
+        <ImageButton
+            android:id="@+id/menuButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_more"
+            android:background="?selectableItemBackgroundBorderless"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/avatarText" />
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:id="@+id/linkContainer"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:id="@+id/authorAvatar"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_default_avatar"
-                    android:scaleType="centerCrop"
-                    app:tint="@null" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/authorName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Имя автора"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/authorJob"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Должность"
-                        android:textSize="12sp"
-                        android:textColor="@android:color/darker_gray" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/published"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="01.01.2024"
-                    android:textSize="12sp"
-                    android:textColor="@android:color/darker_gray" />
-
-            </LinearLayout>
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:background="?selectableItemBackground"
+            android:padding="8dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/content">
 
             <TextView
-                android:id="@+id/content"
-                android:layout_width="match_parent"
+                android:id="@+id/linkText"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Содержание поста"
-                android:textSize="14sp" />
+                android:layout_weight="1"
+                android:textColor="#FF6200EE"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
 
             <ImageView
-                android:id="@+id/attachmentImage"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginTop="12dp"
-                android:scaleType="centerCrop"
-                android:visibility="gone"
-                android:src="@drawable/ic_image_placeholder" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/like"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_like"
-                    android:background="?selectableItemBackgroundBorderless"
-                    android:contentDescription="Like" />
-
-                <TextView
-                    android:id="@+id/likesCounter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:text="0"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_menu_send" />
 
         </LinearLayout>
 
-    </androidx.cardview.widget.CardView>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linkContainer">
 
-</layout>
+            <CheckBox
+                android:id="@+id/likeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@drawable/ic_like_selector"
+                android:background="?selectableItemBackgroundBorderless" />
+
+            <TextView
+                android:id="@+id/likeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="0"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>
