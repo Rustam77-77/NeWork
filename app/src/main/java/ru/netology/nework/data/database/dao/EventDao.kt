@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EventDao {
-    @Query("SELECT * FROM events ORDER BY eventDate DESC")
+    @Query("SELECT * FROM events ORDER BY datetime DESC")
     fun getAllEvents(): Flow<List<EventEntity>>
 
     @Query("SELECT * FROM events WHERE id = :eventId")

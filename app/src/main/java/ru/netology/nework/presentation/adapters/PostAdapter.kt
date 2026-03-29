@@ -42,40 +42,37 @@ class PostAdapter(
 
         fun bind(post: Post) {
             binding.apply {
-                authorName.text = post.authorName
+                authorName.text = post.author
                 date.text = dateFormat.format(post.published)
                 content.text = post.content
-                likeCount.text = post.likesCount.toString()
+                likeCount.text = post.likeOwnerIds.size.toString()
                 likeButton.isChecked = post.likedByMe
 
-                // Инициалы автора
-                val initials = post.authorName.split(" ")
+                val initials = post.author.split(" ")
                     .take(2)
                     .map { it.firstOrNull() ?: '?' }
                     .joinToString("")
                 avatarText.text = initials
 
-                // Ссылка
-                if (post.link.isNullOrEmpty()) {
+                if (post.attachment?.url.isNullOrEmpty()) {
                     linkContainer.visibility = ViewGroup.GONE
                 } else {
                     linkContainer.visibility = ViewGroup.VISIBLE
-                    linkText.text = post.link
+                    linkText.text = post.attachment?.url
                 }
 
-                // Меню только для автора
-                val isAuthor = post.authorId == currentUserId
+                val isAuthor = post.ownedByMe
                 menuButton.visibility = if (isAuthor) ViewGroup.VISIBLE else ViewGroup.GONE
 
-                // Обработчики кликов
                 root.setOnClickListener { onItemClickListener(post) }
                 likeButton.setOnClickListener { onLikeClickListener(post) }
                 menuButton.setOnClickListener { onMenuClickListener(post, isAuthor) }
 
-                // Открытие ссылки
                 linkContainer.setOnClickListener {
-                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(post.link))
-                    root.context.startActivity(intent)
+                    post.attachment?.url?.let { url ->
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                        root.context.startActivity(intent)
+                    }
                 }
             }
         }

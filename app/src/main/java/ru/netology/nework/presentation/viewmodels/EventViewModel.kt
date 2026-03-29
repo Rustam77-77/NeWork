@@ -97,12 +97,12 @@ class EventViewModel @Inject constructor(
 
     fun createEvent(
         content: String,
-        eventDate: Date,
+        datetime: Date,
         type: EventType,
-        speakers: List<Long>,
-        participants: List<Long>,
+        speakerIds: List<Long>,
+        participantIds: List<Long>,
         authorId: Long,
-        authorName: String
+        author: String
     ) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -111,13 +111,13 @@ class EventViewModel @Inject constructor(
                 val event = Event(
                     id = 0,
                     authorId = authorId,
-                    authorName = authorName,
+                    author = author,
                     content = content,
                     published = Date(),
-                    eventDate = eventDate,
+                    datetime = datetime,
                     type = type,
-                    speakers = speakers,
-                    participants = participants
+                    speakerIds = speakerIds,
+                    participantIds = participantIds
                 )
                 val result = eventRepository.saveEvent(event)
                 if (result != null) {
@@ -134,7 +134,14 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun updateEvent(eventId: Long, content: String, eventDate: Date, type: EventType, speakers: List<Long>, participants: List<Long>) {
+    fun updateEvent(
+        eventId: Long,
+        content: String,
+        datetime: Date,
+        type: EventType,
+        speakerIds: List<Long>,
+        participantIds: List<Long>
+    ) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
@@ -143,10 +150,10 @@ class EventViewModel @Inject constructor(
                 if (existingEvent != null) {
                     val updatedEvent = existingEvent.copy(
                         content = content,
-                        eventDate = eventDate,
+                        datetime = datetime,
                         type = type,
-                        speakers = speakers,
-                        participants = participants
+                        speakerIds = speakerIds,
+                        participantIds = participantIds
                     )
                     val result = eventRepository.saveEvent(updatedEvent)
                     if (result != null) {

@@ -6,10 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentUsersBinding
 import ru.netology.nework.dto.User
@@ -42,7 +44,11 @@ class UsersFragment : Fragment() {
         setupObservers()
         setupSwipeRefresh()
 
-        userViewModel.loadUsers()
+        // Загружаем данные с сервера при первом запуске
+        lifecycleScope.launch {
+            userViewModel.loadUsers()
+            userViewModel.refreshUsers()
+        }
     }
 
     private fun initAdapter() {
@@ -59,13 +65,25 @@ class UsersFragment : Fragment() {
     private fun setupObservers() {
         userViewModel.users.observe(viewLifecycleOwner) { users ->
             userAdapter.submitList(users)
-            binding.emptyState.visibility = if (users.isEmpty()) View.VISIBLE else View.GONE
+            if (users.isNotEmpty()) {
+                binding.progressBar.visibility = View.GONE
+                binding.emptyState.visibility = View.GONE
+            } else {
+                if (userViewModel.isLoading.value == false) {
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.progressBar.visibility = View.GONE
+                }
+            }
         }
 
         userViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) {
+            if (isLoading && userViewModel.users.value.isNullOrEmpty()) {
                 binding.progressBar.visibility = View.VISIBLE
-            } else {
+                binding.emptyState.visibility = View.GONE
+            } else if (!isLoading && userViewModel.users.value.isNullOrEmpty()) {
+                binding.progressBar.visibility = View.GONE
+                binding.emptyState.visibility = View.VISIBLE
+            } else if (!isLoading) {
                 binding.progressBar.visibility = View.GONE
             }
         }
@@ -78,6 +96,8 @@ class UsersFragment : Fragment() {
             error?.let {
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
                 userViewModel.clearError()
+                binding.progressBar.visibility = View.GONE
+                binding.emptyState.visibility = View.VISIBLE
             }
         }
     }
@@ -89,9 +109,7 @@ class UsersFragment : Fragment() {
     }
 
     private fun openUserDetail(user: User) {
-        val bundle = Bundle().apply {
-            putLong("userId", user.id)
-        }
+        val bundle = Bundle().apply { putLong("userId", user.id) }
         findNavController().navigate(R.id.userDetailFragment, bundle)
     }
 

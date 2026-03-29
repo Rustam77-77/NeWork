@@ -39,7 +39,7 @@ class CreateEventFragment : Fragment() {
 
     private var selectedSpeakers: MutableList<Long> = mutableListOf()
     private var selectedParticipants: MutableList<Long> = mutableListOf()
-    private var selectedEventDate: Date = Date()
+    private var selectedDateTime: Date = Date()
     private var eventType: EventType = EventType.ONLINE
     private var eventId: Long = 0
     private var isEditMode: Boolean = false
@@ -64,7 +64,7 @@ class CreateEventFragment : Fragment() {
         setupMenu()
         setupObservers()
         setupListeners()
-        updateEventDateDisplay()
+        updateDateTimeDisplay()
 
         if (isEditMode) {
             eventViewModel.loadEventById(eventId)
@@ -95,12 +95,12 @@ class CreateEventFragment : Fragment() {
         eventViewModel.event.observe(viewLifecycleOwner) { event ->
             event?.let {
                 binding.eventContent.setText(it.content)
-                selectedEventDate = it.eventDate
+                selectedDateTime = it.datetime
                 eventType = it.type
-                selectedSpeakers.addAll(it.speakers)
-                selectedParticipants.addAll(it.participants)
+                selectedSpeakers.addAll(it.speakerIds)
+                selectedParticipants.addAll(it.participantIds)
 
-                updateEventDateDisplay()
+                updateDateTimeDisplay()
                 updateSelectedSpeakersCount()
                 updateSelectedParticipantsCount()
 
@@ -113,11 +113,7 @@ class CreateEventFragment : Fragment() {
         }
 
         eventViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) {
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.progressBar.visibility = View.GONE
-            }
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         eventViewModel.error.observe(viewLifecycleOwner) { error ->
@@ -169,20 +165,20 @@ class CreateEventFragment : Fragment() {
 
     private fun showDateTimePicker() {
         val calendar = Calendar.getInstance().apply {
-            time = selectedEventDate
+            time = selectedDateTime
         }
 
         DatePickerDialog(requireContext(), { _, year, month, dayOfMonth ->
             TimePickerDialog(requireContext(), { _, hourOfDay, minute ->
                 calendar.set(year, month, dayOfMonth, hourOfDay, minute)
-                selectedEventDate = calendar.time
-                updateEventDateDisplay()
+                selectedDateTime = calendar.time
+                updateDateTimeDisplay()
             }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
     }
 
-    private fun updateEventDateDisplay() {
-        binding.selectedDate.text = android.text.format.DateFormat.format("dd.MM.yyyy HH:mm", selectedEventDate)
+    private fun updateDateTimeDisplay() {
+        binding.selectedDate.text = android.text.format.DateFormat.format("dd.MM.yyyy HH:mm", selectedDateTime)
     }
 
     private fun showSpeakersSelectionDialog() {
@@ -284,20 +280,20 @@ class CreateEventFragment : Fragment() {
             eventViewModel.updateEvent(
                 eventId = eventId,
                 content = content,
-                eventDate = selectedEventDate,
+                datetime = selectedDateTime,
                 type = eventType,
-                speakers = selectedSpeakers,
-                participants = selectedParticipants
+                speakerIds = selectedSpeakers,
+                participantIds = selectedParticipants
             )
         } else {
             eventViewModel.createEvent(
                 content = content,
-                eventDate = selectedEventDate,
+                datetime = selectedDateTime,
                 type = eventType,
-                speakers = selectedSpeakers,
-                participants = selectedParticipants,
+                speakerIds = selectedSpeakers,
+                participantIds = selectedParticipants,
                 authorId = currentUserId,
-                authorName = currentUserName
+                author = currentUserName
             )
         }
     }

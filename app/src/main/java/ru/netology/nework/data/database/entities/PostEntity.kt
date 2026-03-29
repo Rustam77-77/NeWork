@@ -10,14 +10,15 @@ data class PostEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val authorId: Long,
-    val authorName: String,
+    val author: String,
     val authorAvatar: String? = null,
     val content: String,
     val published: Date,
     val likedByMe: Boolean = false,
-    val likesCount: Int = 0,
-    val link: String? = null,
-    val mentionedUsers: List<Long> = emptyList(),
+    val likeOwnerIds: List<Long> = emptyList(),
+    val mentionIds: List<Long> = emptyList(),
+    val attachment: String? = null,
+    val ownedByMe: Boolean = false,
     val authorJob: String? = null
 )
 
@@ -25,14 +26,17 @@ fun PostEntity.toModel(): Post {
     return Post(
         id = id,
         authorId = authorId,
-        authorName = authorName,
+        author = author,
         authorAvatar = authorAvatar,
         content = content,
         published = published,
         likedByMe = likedByMe,
-        likesCount = likesCount,
-        link = link,
-        mentionedUsers = mentionedUsers,
+        likeOwnerIds = likeOwnerIds,
+        mentionIds = mentionIds,
+        attachment = if (!attachment.isNullOrEmpty()) {
+            ru.netology.nework.dto.Attachment(attachment!!, "image")
+        } else null,
+        ownedByMe = ownedByMe,
         authorJob = authorJob
     )
 }
@@ -41,14 +45,15 @@ fun Post.toEntity(): PostEntity {
     return PostEntity(
         id = id,
         authorId = authorId,
-        authorName = authorName,
+        author = author,
         authorAvatar = authorAvatar,
         content = content,
         published = published,
         likedByMe = likedByMe,
-        likesCount = likesCount,
-        link = link,
-        mentionedUsers = mentionedUsers,
+        likeOwnerIds = likeOwnerIds,
+        mentionIds = mentionIds,
+        attachment = attachment?.url,
+        ownedByMe = ownedByMe,
         authorJob = authorJob
     )
 }

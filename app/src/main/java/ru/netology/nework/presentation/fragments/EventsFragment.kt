@@ -6,11 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentEventsBinding
 import ru.netology.nework.dto.Event
@@ -46,7 +48,11 @@ class EventsFragment : Fragment() {
         setupListeners()
         setupSwipeRefresh()
 
-        eventViewModel.loadEvents()
+        // Загружаем данные с сервера при первом запуске
+        lifecycleScope.launch {
+            eventViewModel.loadEvents()
+            eventViewModel.refreshEvents()
+        }
     }
 
     private fun initAdapter() {
@@ -68,13 +74,25 @@ class EventsFragment : Fragment() {
     private fun setupObservers() {
         eventViewModel.events.observe(viewLifecycleOwner) { events ->
             eventAdapter.submitList(events)
-            binding.emptyState.visibility = if (events.isEmpty()) View.VISIBLE else View.GONE
+            if (events.isNotEmpty()) {
+                binding.progressBar.visibility = View.GONE
+                binding.emptyState.visibility = View.GONE
+            } else {
+                if (eventViewModel.isLoading.value == false) {
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.progressBar.visibility = View.GONE
+                }
+            }
         }
 
         eventViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) {
+            if (isLoading && eventViewModel.events.value.isNullOrEmpty()) {
                 binding.progressBar.visibility = View.VISIBLE
-            } else {
+                binding.emptyState.visibility = View.GONE
+            } else if (!isLoading && eventViewModel.events.value.isNullOrEmpty()) {
+                binding.progressBar.visibility = View.GONE
+                binding.emptyState.visibility = View.VISIBLE
+            } else if (!isLoading) {
                 binding.progressBar.visibility = View.GONE
             }
         }
@@ -87,13 +105,14 @@ class EventsFragment : Fragment() {
             error?.let {
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
                 eventViewModel.clearError()
+                binding.progressBar.visibility = View.GONE
+                binding.emptyState.visibility = View.VISIBLE
             }
         }
 
         authViewModel.currentUserId.observe(viewLifecycleOwner) {
             initAdapter()
             binding.recyclerView.adapter = eventAdapter
-            eventAdapter.submitList(eventViewModel.events.value)
         }
     }
 
@@ -114,9 +133,7 @@ class EventsFragment : Fragment() {
     }
 
     private fun openEventDetail(event: Event) {
-        val bundle = Bundle().apply {
-            putLong("eventId", event.id)
-        }
+        val bundle = Bundle().apply { putLong("eventId", event.id) }
         findNavController().navigate(R.id.eventDetailFragment, bundle)
     }
 
@@ -126,14 +143,10 @@ class EventsFragment : Fragment() {
             .setItems(arrayOf("Редактировать", "Удалить")) { _, which ->
                 when (which) {
                     0 -> {
-                        val bundle = Bundle().apply {
-                            putLong("eventId", event.id)
-                        }
+                        val bundle = Bundle().apply { putLong("eventId", event.id) }
                         findNavController().navigate(R.id.createEventFragment, bundle)
                     }
-                    1 -> {
-                        showDeleteConfirmationDialog(event.id)
-                    }
+                    1 -> showDeleteConfirmationDialog(event.id)
                 }
             }
             .show()
@@ -143,9 +156,7 @@ class EventsFragment : Fragment() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Удаление события")
             .setMessage("Вы уверены, что хотите удалить это событие?")
-            .setPositiveButton("Удалить") { _, _ ->
-                eventViewModel.deleteEvent(eventId)
-            }
+            .setPositiveButton("Удалить") { _, _ -> eventViewModel.deleteEvent(eventId) }
             .setNegativeButton("Отмена", null)
             .show()
     }

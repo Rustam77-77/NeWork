@@ -54,11 +54,7 @@ class PostDetailFragment : Fragment() {
         }
 
         postViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) {
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.progressBar.visibility = View.GONE
-            }
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         postViewModel.error.observe(viewLifecycleOwner) { error ->
@@ -73,31 +69,31 @@ class PostDetailFragment : Fragment() {
         val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
 
         binding.apply {
-            authorName.text = post.authorName
+            authorName.text = post.author
             date.text = dateFormat.format(post.published)
             content.text = post.content
             authorJob.text = post.authorJob ?: "В поиске работы"
 
-            // Ссылка
-            if (post.link.isNullOrEmpty()) {
+            // Ссылка/вложение
+            if (post.attachment?.url.isNullOrEmpty()) {
                 linkContainer.visibility = View.GONE
             } else {
                 linkContainer.visibility = View.VISIBLE
-                linkText.text = post.link
+                linkText.text = post.attachment?.url
                 linkContainer.setOnClickListener {
-                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(post.link))
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(post.attachment?.url))
                     startActivity(intent)
                 }
             }
 
             // Упомянутые пользователи
-            if (post.mentionedUsers.isEmpty()) {
+            if (post.mentionIds.isEmpty()) {
                 mentionedUsersTitle.visibility = View.GONE
                 mentionedUsersList.visibility = View.GONE
             } else {
                 mentionedUsersTitle.visibility = View.VISIBLE
                 mentionedUsersList.visibility = View.VISIBLE
-                loadMentionedUsers(post.mentionedUsers)
+                loadMentionedUsers(post.mentionIds)
             }
         }
     }

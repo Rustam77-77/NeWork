@@ -11,17 +11,18 @@ data class EventEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val authorId: Long,
-    val authorName: String,
+    val author: String,
     val authorAvatar: String? = null,
     val content: String,
     val published: Date,
-    val eventDate: Date,
+    val datetime: Date,
     val type: EventType,
     val likedByMe: Boolean = false,
-    val likesCount: Int = 0,
+    val likeOwnerIds: List<Long> = emptyList(),
     val link: String? = null,
-    val participants: List<Long> = emptyList(),
-    val speakers: List<Long> = emptyList(),
+    val participantIds: List<Long> = emptyList(),
+    val speakerIds: List<Long> = emptyList(),
+    val ownedByMe: Boolean = false,
     val authorJob: String? = null
 )
 
@@ -29,17 +30,18 @@ fun EventEntity.toModel(): Event {
     return Event(
         id = id,
         authorId = authorId,
-        authorName = authorName,
+        author = author,
         authorAvatar = authorAvatar,
         content = content,
         published = published,
-        eventDate = eventDate,
+        datetime = datetime,
         type = type,
         likedByMe = likedByMe,
-        likesCount = likesCount,
+        likeOwnerIds = likeOwnerIds,
         link = link,
-        participants = participants,
-        speakers = speakers,
+        participantIds = participantIds,
+        speakerIds = speakerIds,
+        ownedByMe = ownedByMe,
         authorJob = authorJob
     )
 }
@@ -48,17 +50,18 @@ fun Event.toEntity(): EventEntity {
     return EventEntity(
         id = id,
         authorId = authorId,
-        authorName = authorName,
+        author = author,
         authorAvatar = authorAvatar,
         content = content,
         published = published,
-        eventDate = eventDate,
+        datetime = datetime,
         type = type,
         likedByMe = likedByMe,
-        likesCount = likesCount,
+        likeOwnerIds = likeOwnerIds,
         link = link,
-        participants = participants,
-        speakers = speakers,
+        participantIds = participantIds,
+        speakerIds = speakerIds,
+        ownedByMe = ownedByMe,
         authorJob = authorJob
     )
 }

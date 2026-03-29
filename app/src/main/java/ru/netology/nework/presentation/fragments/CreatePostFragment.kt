@@ -17,7 +17,6 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentCreatePostBinding
-import ru.netology.nework.dto.User
 import ru.netology.nework.presentation.adapters.UserSelectionAdapter
 import ru.netology.nework.presentation.viewmodels.AuthViewModel
 import ru.netology.nework.presentation.viewmodels.PostViewModel
@@ -87,17 +86,13 @@ class CreatePostFragment : Fragment() {
         postViewModel.post.observe(viewLifecycleOwner) { post ->
             post?.let {
                 binding.postContent.setText(it.content)
-                selectedUsers.addAll(it.mentionedUsers)
+                selectedUsers.addAll(it.mentionIds)
                 updateSelectedUsersCount()
             }
         }
 
         postViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) {
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.progressBar.visibility = View.GONE
-            }
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         postViewModel.error.observe(viewLifecycleOwner) { error ->
@@ -175,7 +170,7 @@ class CreatePostFragment : Fragment() {
         }
 
         val currentUserId = authViewModel.currentUserId.value
-        val currentUserName = "Пользователь" // В реальном приложении получать из профиля
+        val currentUserName = "Пользователь"
 
         if (currentUserId == null) {
             Snackbar.make(binding.root, "Необходимо авторизоваться", Snackbar.LENGTH_LONG).show()

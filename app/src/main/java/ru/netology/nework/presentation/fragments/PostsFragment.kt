@@ -6,11 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentPostsBinding
 import ru.netology.nework.dto.Post
@@ -28,6 +30,7 @@ class PostsFragment : Fragment() {
     private val authViewModel: AuthViewModel by viewModels()
 
     private lateinit var postAdapter: PostAdapter
+    private var isFirstLoad = true
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,7 +49,12 @@ class PostsFragment : Fragment() {
         setupListeners()
         setupSwipeRefresh()
 
-        postViewModel.loadPosts()
+        // Загружаем данные с сервера при первом запуске
+        lifecycleScope.launch {
+            postViewModel.loadPosts()
+            // Ждем загрузки с сервера
+            postViewModel.refreshPosts()
+        }
     }
 
     private fun initAdapter() {
@@ -68,13 +76,27 @@ class PostsFragment : Fragment() {
     private fun setupObservers() {
         postViewModel.posts.observe(viewLifecycleOwner) { posts ->
             postAdapter.submitList(posts)
-            binding.emptyState.visibility = if (posts.isEmpty()) View.VISIBLE else View.GONE
+            if (posts.isNotEmpty()) {
+                // Данные загружены, скрываем индикатор загрузки
+                binding.progressBar.visibility = View.GONE
+                binding.emptyState.visibility = View.GONE
+            } else {
+                // Проверяем, не идет ли загрузка
+                if (postViewModel.isLoading.value == false) {
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.progressBar.visibility = View.GONE
+                }
+            }
         }
 
         postViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) {
+            if (isLoading && postViewModel.posts.value.isNullOrEmpty()) {
                 binding.progressBar.visibility = View.VISIBLE
-            } else {
+                binding.emptyState.visibility = View.GONE
+            } else if (!isLoading && postViewModel.posts.value.isNullOrEmpty()) {
+                binding.progressBar.visibility = View.GONE
+                binding.emptyState.visibility = View.VISIBLE
+            } else if (!isLoading) {
                 binding.progressBar.visibility = View.GONE
             }
         }
@@ -87,13 +109,14 @@ class PostsFragment : Fragment() {
             error?.let {
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
                 postViewModel.clearError()
+                binding.progressBar.visibility = View.GONE
+                binding.emptyState.visibility = View.VISIBLE
             }
         }
 
         authViewModel.currentUserId.observe(viewLifecycleOwner) {
             initAdapter()
             binding.recyclerView.adapter = postAdapter
-            postAdapter.submitList(postViewModel.posts.value)
         }
     }
 
@@ -114,9 +137,7 @@ class PostsFragment : Fragment() {
     }
 
     private fun openPostDetail(post: Post) {
-        val bundle = Bundle().apply {
-            putLong("postId", post.id)
-        }
+        val bundle = Bundle().apply { putLong("postId", post.id) }
         findNavController().navigate(R.id.postDetailFragment, bundle)
     }
 
@@ -126,14 +147,10 @@ class PostsFragment : Fragment() {
             .setItems(arrayOf("Редактировать", "Удалить")) { _, which ->
                 when (which) {
                     0 -> {
-                        val bundle = Bundle().apply {
-                            putLong("postId", post.id)
-                        }
+                        val bundle = Bundle().apply { putLong("postId", post.id) }
                         findNavController().navigate(R.id.createPostFragment, bundle)
                     }
-                    1 -> {
-                        showDeleteConfirmationDialog(post.id)
-                    }
+                    1 -> showDeleteConfirmationDialog(post.id)
                 }
             }
             .show()
@@ -143,9 +160,7 @@ class PostsFragment : Fragment() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Удаление поста")
             .setMessage("Вы уверены, что хотите удалить этот пост?")
-            .setPositiveButton("Удалить") { _, _ ->
-                postViewModel.deletePost(postId)
-            }
+            .setPositiveButton("Удалить") { _, _ -> postViewModel.deletePost(postId) }
             .setNegativeButton("Отмена", null)
             .show()
     }

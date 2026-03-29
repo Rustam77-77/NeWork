@@ -54,11 +54,7 @@ class EventDetailFragment : Fragment() {
         }
 
         eventViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) {
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.progressBar.visibility = View.GONE
-            }
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
         eventViewModel.error.observe(viewLifecycleOwner) { error ->
@@ -73,9 +69,9 @@ class EventDetailFragment : Fragment() {
         val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
 
         binding.apply {
-            authorName.text = event.authorName
+            authorName.text = event.author
             date.text = "Опубликовано: ${dateFormat.format(event.published)}"
-            eventDate.text = "Дата проведения: ${dateFormat.format(event.eventDate)}"
+            eventDate.text = "Дата проведения: ${dateFormat.format(event.datetime)}"
             eventType.text = if (event.type.name == "ONLINE") "Онлайн" else "Офлайн"
             content.text = event.content
             authorJob.text = event.authorJob ?: "В поиске работы"
@@ -93,23 +89,23 @@ class EventDetailFragment : Fragment() {
             }
 
             // Участники
-            if (event.participants.isEmpty()) {
+            if (event.participantIds.isEmpty()) {
                 participantsTitle.visibility = View.GONE
                 participantsList.visibility = View.GONE
             } else {
                 participantsTitle.visibility = View.VISIBLE
                 participantsList.visibility = View.VISIBLE
-                loadParticipants(event.participants)
+                loadParticipants(event.participantIds)
             }
 
             // Спикеры
-            if (event.speakers.isEmpty()) {
+            if (event.speakerIds.isEmpty()) {
                 speakersTitle.visibility = View.GONE
                 speakersList.visibility = View.GONE
             } else {
                 speakersTitle.visibility = View.VISIBLE
                 speakersList.visibility = View.VISIBLE
-                loadSpeakers(event.speakers)
+                loadSpeakers(event.speakerIds)
             }
         }
     }

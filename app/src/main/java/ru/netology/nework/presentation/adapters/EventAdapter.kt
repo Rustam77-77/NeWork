@@ -42,22 +42,20 @@ class EventAdapter(
 
         fun bind(event: Event) {
             binding.apply {
-                authorName.text = event.authorName
+                authorName.text = event.author
                 date.text = "Опубликовано: ${dateFormat.format(event.published)}"
-                eventDate.text = "Дата проведения: ${dateFormat.format(event.eventDate)}"
+                eventDate.text = "Дата проведения: ${dateFormat.format(event.datetime)}"
                 eventType.text = if (event.type.name == "ONLINE") "Онлайн" else "Офлайн"
                 content.text = event.content
-                likeCount.text = event.likesCount.toString()
+                likeCount.text = event.likeOwnerIds.size.toString()
                 likeButton.isChecked = event.likedByMe
 
-                // Инициалы автора
-                val initials = event.authorName.split(" ")
+                val initials = event.author.split(" ")
                     .take(2)
                     .map { it.firstOrNull() ?: '?' }
                     .joinToString("")
                 avatarText.text = initials
 
-                // Ссылка
                 if (event.link.isNullOrEmpty()) {
                     linkContainer.visibility = ViewGroup.GONE
                 } else {
@@ -65,16 +63,13 @@ class EventAdapter(
                     linkText.text = event.link
                 }
 
-                // Меню только для автора
-                val isAuthor = event.authorId == currentUserId
+                val isAuthor = event.ownedByMe
                 menuButton.visibility = if (isAuthor) ViewGroup.VISIBLE else ViewGroup.GONE
 
-                // Обработчики кликов
                 root.setOnClickListener { onItemClickListener(event) }
                 likeButton.setOnClickListener { onLikeClickListener(event) }
                 menuButton.setOnClickListener { onMenuClickListener(event, isAuthor) }
 
-                // Открытие ссылки
                 linkContainer.setOnClickListener {
                     val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(event.link))
                     root.context.startActivity(intent)

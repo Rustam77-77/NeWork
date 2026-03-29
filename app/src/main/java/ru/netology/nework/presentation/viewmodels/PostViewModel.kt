@@ -97,7 +97,7 @@ class PostViewModel @Inject constructor(
         }
     }
 
-    fun createPost(content: String, mentionedUsers: List<Long>, authorId: Long, authorName: String) {
+    fun createPost(content: String, mentionIds: List<Long>, authorId: Long, author: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _isCreated.value = false
@@ -105,10 +105,10 @@ class PostViewModel @Inject constructor(
                 val post = Post(
                     id = 0,
                     authorId = authorId,
-                    authorName = authorName,
+                    author = author,
                     content = content,
                     published = Date(),
-                    mentionedUsers = mentionedUsers
+                    mentionIds = mentionIds
                 )
                 val result = postRepository.savePost(post)
                 if (result != null) {
@@ -125,7 +125,7 @@ class PostViewModel @Inject constructor(
         }
     }
 
-    fun updatePost(postId: Long, content: String, mentionedUsers: List<Long>) {
+    fun updatePost(postId: Long, content: String, mentionIds: List<Long>) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
@@ -134,7 +134,7 @@ class PostViewModel @Inject constructor(
                 if (existingPost != null) {
                     val updatedPost = existingPost.copy(
                         content = content,
-                        mentionedUsers = mentionedUsers
+                        mentionIds = mentionIds
                     )
                     val result = postRepository.savePost(updatedPost)
                     if (result != null) {

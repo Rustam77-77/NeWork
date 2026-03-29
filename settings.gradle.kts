@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "NeWork"
 include(":app")
+include(":app")
+ 
