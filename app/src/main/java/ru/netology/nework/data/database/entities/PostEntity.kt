@@ -2,8 +2,9 @@ package ru.netology.nework.data.database.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import ru.netology.nework.dto.Attachment
 import ru.netology.nework.dto.Post
-import java.util.Date
+import java.time.Instant
 
 @Entity(tableName = "posts")
 data class PostEntity(
@@ -13,7 +14,7 @@ data class PostEntity(
     val author: String,
     val authorAvatar: String? = null,
     val content: String,
-    val published: Date,
+    val published: Instant,
     val likedByMe: Boolean = false,
     val likeOwnerIds: List<Long> = emptyList(),
     val mentionIds: List<Long> = emptyList(),
@@ -34,7 +35,7 @@ fun PostEntity.toModel(): Post {
         likeOwnerIds = likeOwnerIds,
         mentionIds = mentionIds,
         attachment = if (!attachment.isNullOrEmpty()) {
-            ru.netology.nework.dto.Attachment(attachment!!, "image")
+            Attachment(attachment, "image")
         } else null,
         ownedByMe = ownedByMe,
         authorJob = authorJob

@@ -1,18 +1,19 @@
 package ru.netology.nework.presentation.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentPostsBinding
 import ru.netology.nework.dto.Post
@@ -30,7 +31,10 @@ class PostsFragment : Fragment() {
     private val authViewModel: AuthViewModel by viewModels()
 
     private lateinit var postAdapter: PostAdapter
-    private var isFirstLoad = true
+
+    companion object {
+        private const val TAG = "PostsFragment"
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,18 +47,14 @@ class PostsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        Log.d(TAG, "onViewCreated started")
+
         initAdapter()
         setupRecyclerView()
         setupObservers()
         setupListeners()
         setupSwipeRefresh()
-
-        // Загружаем данные с сервера при первом запуске
-        lifecycleScope.launch {
-            postViewModel.loadPosts()
-            // Ждем загрузки с сервера
-            postViewModel.refreshPosts()
-        }
     }
 
     private fun initAdapter() {
@@ -75,48 +75,30 @@ class PostsFragment : Fragment() {
 
     private fun setupObservers() {
         postViewModel.posts.observe(viewLifecycleOwner) { posts ->
+            Log.d(TAG, "Posts received: ${posts.size}")
             postAdapter.submitList(posts)
-            if (posts.isNotEmpty()) {
-                // Данные загружены, скрываем индикатор загрузки
-                binding.progressBar.visibility = View.GONE
-                binding.emptyState.visibility = View.GONE
-            } else {
-                // Проверяем, не идет ли загрузка
-                if (postViewModel.isLoading.value == false) {
-                    binding.emptyState.visibility = View.VISIBLE
-                    binding.progressBar.visibility = View.GONE
-                }
-            }
+            binding.emptyState.isVisible = posts.isEmpty()
+            binding.progressBar.isVisible = false
         }
 
         postViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading && postViewModel.posts.value.isNullOrEmpty()) {
-                binding.progressBar.visibility = View.VISIBLE
-                binding.emptyState.visibility = View.GONE
-            } else if (!isLoading && postViewModel.posts.value.isNullOrEmpty()) {
-                binding.progressBar.visibility = View.GONE
-                binding.emptyState.visibility = View.VISIBLE
-            } else if (!isLoading) {
-                binding.progressBar.visibility = View.GONE
-            }
-        }
-
-        postViewModel.isRefreshing.observe(viewLifecycleOwner) { isRefreshing ->
-            binding.swipeRefresh.isRefreshing = isRefreshing
+            Log.d(TAG, "Loading: $isLoading")
+            binding.progressBar.isVisible = isLoading
         }
 
         postViewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
+                Log.e(TAG, "Error: $it")
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
                 postViewModel.clearError()
-                binding.progressBar.visibility = View.GONE
-                binding.emptyState.visibility = View.VISIBLE
+                binding.progressBar.isVisible = false
             }
         }
 
         authViewModel.currentUserId.observe(viewLifecycleOwner) {
             initAdapter()
             binding.recyclerView.adapter = postAdapter
+            postAdapter.submitList(postViewModel.posts.value)
         }
     }
 
@@ -137,8 +119,7 @@ class PostsFragment : Fragment() {
     }
 
     private fun openPostDetail(post: Post) {
-        val bundle = Bundle().apply { putLong("postId", post.id) }
-        findNavController().navigate(R.id.postDetailFragment, bundle)
+        findNavController().navigate(R.id.postDetailFragment, bundleOf("postId" to post.id))
     }
 
     private fun showPostMenuDialog(post: Post) {
@@ -147,8 +128,7 @@ class PostsFragment : Fragment() {
             .setItems(arrayOf("Редактировать", "Удалить")) { _, which ->
                 when (which) {
                     0 -> {
-                        val bundle = Bundle().apply { putLong("postId", post.id) }
-                        findNavController().navigate(R.id.createPostFragment, bundle)
+                        findNavController().navigate(R.id.createPostFragment, bundleOf("postId" to post.id))
                     }
                     1 -> showDeleteConfirmationDialog(post.id)
                 }

@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.EventType
-import java.util.Date
+import java.time.Instant
 
 @Entity(tableName = "events")
 data class EventEntity(
@@ -14,8 +14,8 @@ data class EventEntity(
     val author: String,
     val authorAvatar: String? = null,
     val content: String,
-    val published: Date,
-    val datetime: Date,
+    val published: Instant,
+    val datetime: Instant,
     val type: EventType,
     val likedByMe: Boolean = false,
     val likeOwnerIds: List<Long> = emptyList(),

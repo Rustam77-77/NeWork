@@ -1,8 +1,10 @@
 package ru.netology.nework.dto
 
 import android.os.Parcelable
+import com.google.gson.annotations.JsonAdapter
 import kotlinx.parcelize.Parcelize
-import java.util.Date
+import ru.netology.nework.utils.InstantAdapter
+import java.time.Instant
 
 @Parcelize
 data class Post(
@@ -11,7 +13,8 @@ data class Post(
     val author: String,
     val authorAvatar: String? = null,
     val content: String,
-    val published: Date,
+    @JsonAdapter(InstantAdapter::class)
+    val published: Instant,
     val likedByMe: Boolean = false,
     val likeOwnerIds: List<Long> = emptyList(),
     val mentionIds: List<Long> = emptyList(),

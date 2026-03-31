@@ -1,5 +1,6 @@
 package ru.netology.nework.presentation.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,7 +10,7 @@ import kotlinx.coroutines.launch
 import ru.netology.nework.data.repository.EventRepository
 import ru.netology.nework.dto.Event
 import ru.netology.nework.dto.EventType
-import java.util.Date
+import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,6 +36,15 @@ class EventViewModel @Inject constructor(
     private val _isCreated = MutableLiveData(false)
     val isCreated: LiveData<Boolean> = _isCreated
 
+    companion object {
+        private const val TAG = "EventViewModel"
+    }
+
+    init {
+        loadEvents()
+        refreshEvents()
+    }
+
     fun loadEvents() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -43,6 +53,7 @@ class EventViewModel @Inject constructor(
                     _events.value = eventList
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error loading events", e)
                 _error.value = "Ошибка загрузки событий: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -70,7 +81,9 @@ class EventViewModel @Inject constructor(
             _isRefreshing.value = true
             try {
                 eventRepository.refreshEvents()
+                Log.d(TAG, "refreshEvents completed")
             } catch (e: Exception) {
+                Log.e(TAG, "Error refreshing events", e)
                 _error.value = "Ошибка обновления событий: ${e.message}"
             } finally {
                 _isRefreshing.value = false
@@ -97,7 +110,7 @@ class EventViewModel @Inject constructor(
 
     fun createEvent(
         content: String,
-        datetime: Date,
+        datetime: Instant,
         type: EventType,
         speakerIds: List<Long>,
         participantIds: List<Long>,
@@ -113,7 +126,7 @@ class EventViewModel @Inject constructor(
                     authorId = authorId,
                     author = author,
                     content = content,
-                    published = Date(),
+                    published = Instant.now(),
                     datetime = datetime,
                     type = type,
                     speakerIds = speakerIds,
@@ -137,7 +150,7 @@ class EventViewModel @Inject constructor(
     fun updateEvent(
         eventId: Long,
         content: String,
-        datetime: Date,
+        datetime: Instant,
         type: EventType,
         speakerIds: List<Long>,
         participantIds: List<Long>

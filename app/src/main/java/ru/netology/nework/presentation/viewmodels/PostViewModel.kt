@@ -1,5 +1,6 @@
 package ru.netology.nework.presentation.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,7 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.netology.nework.data.repository.PostRepository
 import ru.netology.nework.dto.Post
-import java.util.Date
+import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,8 +35,14 @@ class PostViewModel @Inject constructor(
     private val _isCreated = MutableLiveData(false)
     val isCreated: LiveData<Boolean> = _isCreated
 
-    private val _isDeleted = MutableLiveData(false)
-    val isDeleted: LiveData<Boolean> = _isDeleted
+    companion object {
+        private const val TAG = "PostViewModel"
+    }
+
+    init {
+        loadPosts()
+        refreshPosts()
+    }
 
     fun loadPosts() {
         viewModelScope.launch {
@@ -107,7 +114,7 @@ class PostViewModel @Inject constructor(
                     authorId = authorId,
                     author = author,
                     content = content,
-                    published = Date(),
+                    published = Instant.now(),
                     mentionIds = mentionIds
                 )
                 val result = postRepository.savePost(post)
@@ -153,11 +160,9 @@ class PostViewModel @Inject constructor(
 
     fun deletePost(postId: Long) {
         viewModelScope.launch {
-            _isDeleted.value = false
             try {
                 val result = postRepository.deletePost(postId)
                 if (result) {
-                    _isDeleted.value = true
                     refreshPosts()
                 } else {
                     _error.value = "Ошибка удаления поста"
@@ -174,9 +179,5 @@ class PostViewModel @Inject constructor(
 
     fun clearCreated() {
         _isCreated.value = false
-    }
-
-    fun clearDeleted() {
-        _isDeleted.value = false
     }
 }

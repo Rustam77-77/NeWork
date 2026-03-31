@@ -8,7 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.netology.nework.data.repository.JobRepository
 import ru.netology.nework.dto.Job
-import java.util.Date
+import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -67,7 +67,7 @@ class UserJobsViewModel @Inject constructor(
         }
     }
 
-    fun createJob(company: String, position: String, startDate: Date, endDate: Date?) {
+    fun createJob(company: String, position: String, startDate: Instant, endDate: Instant?) {
         if (currentUserId == 0L) return
 
         viewModelScope.launch {

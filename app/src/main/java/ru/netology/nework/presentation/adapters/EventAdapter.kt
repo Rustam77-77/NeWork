@@ -2,6 +2,7 @@ package ru.netology.nework.presentation.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -57,14 +58,14 @@ class EventAdapter(
                 avatarText.text = initials
 
                 if (event.link.isNullOrEmpty()) {
-                    linkContainer.visibility = ViewGroup.GONE
+                    linkContainer.isVisible = false
                 } else {
-                    linkContainer.visibility = ViewGroup.VISIBLE
+                    linkContainer.isVisible = true
                     linkText.text = event.link
                 }
 
                 val isAuthor = event.ownedByMe
-                menuButton.visibility = if (isAuthor) ViewGroup.VISIBLE else ViewGroup.GONE
+                menuButton.isVisible = isAuthor
 
                 root.setOnClickListener { onItemClickListener(event) }
                 likeButton.setOnClickListener { onLikeClickListener(event) }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.snackbar.Snackbar
@@ -11,7 +12,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nework.databinding.FragmentPostDetailBinding
 import ru.netology.nework.presentation.viewmodels.PostViewModel
 import ru.netology.nework.presentation.viewmodels.UserViewModel
-import java.text.SimpleDateFormat
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -24,6 +26,11 @@ class PostDetailFragment : Fragment() {
     private val userViewModel: UserViewModel by viewModels()
 
     private var postId: Long = 0
+
+    private val dateFormatter = DateTimeFormatter
+        .ofPattern("dd.MM.yyyy HH:mm")
+        .withLocale(Locale.getDefault())
+        .withZone(ZoneId.systemDefault())
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,7 +61,7 @@ class PostDetailFragment : Fragment() {
         }
 
         postViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.progressBar.isVisible = isLoading
         }
 
         postViewModel.error.observe(viewLifecycleOwner) { error ->
@@ -66,19 +73,16 @@ class PostDetailFragment : Fragment() {
     }
 
     private fun displayPost(post: ru.netology.nework.dto.Post) {
-        val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-
         binding.apply {
             authorName.text = post.author
-            date.text = dateFormat.format(post.published)
+            date.text = dateFormatter.format(post.published)
             content.text = post.content
             authorJob.text = post.authorJob ?: "В поиске работы"
 
-            // Ссылка/вложение
             if (post.attachment?.url.isNullOrEmpty()) {
-                linkContainer.visibility = View.GONE
+                linkContainer.isVisible = false
             } else {
-                linkContainer.visibility = View.VISIBLE
+                linkContainer.isVisible = true
                 linkText.text = post.attachment?.url
                 linkContainer.setOnClickListener {
                     val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(post.attachment?.url))
@@ -86,13 +90,12 @@ class PostDetailFragment : Fragment() {
                 }
             }
 
-            // Упомянутые пользователи
             if (post.mentionIds.isEmpty()) {
-                mentionedUsersTitle.visibility = View.GONE
-                mentionedUsersList.visibility = View.GONE
+                mentionedUsersTitle.isVisible = false
+                mentionedUsersList.isVisible = false
             } else {
-                mentionedUsersTitle.visibility = View.VISIBLE
-                mentionedUsersList.visibility = View.VISIBLE
+                mentionedUsersTitle.isVisible = true
+                mentionedUsersList.isVisible = true
                 loadMentionedUsers(post.mentionIds)
             }
         }

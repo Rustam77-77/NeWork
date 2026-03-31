@@ -17,6 +17,8 @@ import ru.netology.nework.BuildConfig
 import ru.netology.nework.api.ApiService
 import ru.netology.nework.data.database.AppDatabase
 import ru.netology.nework.data.database.dao.*
+import ru.netology.nework.utils.DateAdapter
+import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -28,6 +30,7 @@ object AppModule {
     @Singleton
     fun provideGson(): Gson {
         return GsonBuilder()
+            .registerTypeAdapter(Date::class.java, DateAdapter())
             .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
             .create()
     }

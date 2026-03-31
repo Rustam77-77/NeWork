@@ -1,8 +1,10 @@
 package ru.netology.nework.dto
 
 import android.os.Parcelable
+import com.google.gson.annotations.JsonAdapter
 import kotlinx.parcelize.Parcelize
-import java.util.Date
+import ru.netology.nework.utils.InstantAdapter
+import java.time.Instant
 
 enum class EventType {
     ONLINE, OFFLINE
@@ -15,8 +17,10 @@ data class Event(
     val author: String,
     val authorAvatar: String? = null,
     val content: String,
-    val published: Date,
-    val datetime: Date,
+    @JsonAdapter(InstantAdapter::class)
+    val published: Instant,
+    @JsonAdapter(InstantAdapter::class)
+    val datetime: Instant,
     val type: EventType,
     val likedByMe: Boolean = false,
     val likeOwnerIds: List<Long> = emptyList(),

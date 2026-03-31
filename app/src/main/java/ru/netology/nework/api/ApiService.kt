@@ -2,16 +2,29 @@ package ru.netology.nework.api
 
 import retrofit2.Response
 import retrofit2.http.*
-import ru.netology.nework.dto.*
+import ru.netology.nework.dto.AuthResponse
+import ru.netology.nework.dto.Event
+import ru.netology.nework.dto.Job
+import ru.netology.nework.dto.Post
+import ru.netology.nework.dto.User
 
 interface ApiService {
 
     // ==================== Auth ====================
-    @POST("api/login")
-    suspend fun login(@Body request: LoginRequest): Response<AuthResponse>
+    @FormUrlEncoded
+    @POST("api/users/authentication")
+    suspend fun login(
+        @Field("login") login: String,
+        @Field("password") password: String
+    ): Response<AuthResponse>
 
-    @POST("api/register")
-    suspend fun register(@Body request: RegisterRequest): Response<AuthResponse>
+    @FormUrlEncoded
+    @POST("api/users")
+    suspend fun register(
+        @Field("login") login: String,
+        @Field("name") name: String,
+        @Field("password") password: String
+    ): Response<AuthResponse>
 
     // ==================== Posts ====================
     @GET("api/posts")

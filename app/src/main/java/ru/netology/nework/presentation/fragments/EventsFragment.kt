@@ -1,18 +1,19 @@
 package ru.netology.nework.presentation.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentEventsBinding
 import ru.netology.nework.dto.Event
@@ -31,6 +32,10 @@ class EventsFragment : Fragment() {
 
     private lateinit var eventAdapter: EventAdapter
 
+    companion object {
+        private const val TAG = "EventsFragment"
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -42,17 +47,14 @@ class EventsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        Log.d(TAG, "onViewCreated started")
+
         initAdapter()
         setupRecyclerView()
         setupObservers()
         setupListeners()
         setupSwipeRefresh()
-
-        // Загружаем данные с сервера при первом запуске
-        lifecycleScope.launch {
-            eventViewModel.loadEvents()
-            eventViewModel.refreshEvents()
-        }
     }
 
     private fun initAdapter() {
@@ -73,28 +75,14 @@ class EventsFragment : Fragment() {
 
     private fun setupObservers() {
         eventViewModel.events.observe(viewLifecycleOwner) { events ->
+            Log.d(TAG, "Events received: ${events.size}")
             eventAdapter.submitList(events)
-            if (events.isNotEmpty()) {
-                binding.progressBar.visibility = View.GONE
-                binding.emptyState.visibility = View.GONE
-            } else {
-                if (eventViewModel.isLoading.value == false) {
-                    binding.emptyState.visibility = View.VISIBLE
-                    binding.progressBar.visibility = View.GONE
-                }
-            }
+            binding.emptyState.isVisible = events.isEmpty()
+            binding.progressBar.isVisible = false
         }
 
         eventViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading && eventViewModel.events.value.isNullOrEmpty()) {
-                binding.progressBar.visibility = View.VISIBLE
-                binding.emptyState.visibility = View.GONE
-            } else if (!isLoading && eventViewModel.events.value.isNullOrEmpty()) {
-                binding.progressBar.visibility = View.GONE
-                binding.emptyState.visibility = View.VISIBLE
-            } else if (!isLoading) {
-                binding.progressBar.visibility = View.GONE
-            }
+            binding.progressBar.isVisible = isLoading
         }
 
         eventViewModel.isRefreshing.observe(viewLifecycleOwner) { isRefreshing ->
@@ -103,10 +91,10 @@ class EventsFragment : Fragment() {
 
         eventViewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
+                Log.e(TAG, "Error: $it")
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
                 eventViewModel.clearError()
-                binding.progressBar.visibility = View.GONE
-                binding.emptyState.visibility = View.VISIBLE
+                binding.progressBar.isVisible = false
             }
         }
 
@@ -133,8 +121,7 @@ class EventsFragment : Fragment() {
     }
 
     private fun openEventDetail(event: Event) {
-        val bundle = Bundle().apply { putLong("eventId", event.id) }
-        findNavController().navigate(R.id.eventDetailFragment, bundle)
+        findNavController().navigate(R.id.eventDetailFragment, bundleOf("eventId" to event.id))
     }
 
     private fun showEventMenuDialog(event: Event) {
@@ -143,8 +130,7 @@ class EventsFragment : Fragment() {
             .setItems(arrayOf("Редактировать", "Удалить")) { _, which ->
                 when (which) {
                     0 -> {
-                        val bundle = Bundle().apply { putLong("eventId", event.id) }
-                        findNavController().navigate(R.id.createEventFragment, bundle)
+                        findNavController().navigate(R.id.createEventFragment, bundleOf("eventId" to event.id))
                     }
                     1 -> showDeleteConfirmationDialog(event.id)
                 }

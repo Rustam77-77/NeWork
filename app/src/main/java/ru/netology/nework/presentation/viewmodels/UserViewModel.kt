@@ -30,6 +30,11 @@ class UserViewModel @Inject constructor(
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
+    init {
+        loadUsers()
+        refreshUsers()
+    }
+
     fun loadUsers() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -69,16 +74,6 @@ class UserViewModel @Inject constructor(
                 _error.value = "Ошибка обновления пользователей: ${e.message}"
             } finally {
                 _isRefreshing.value = false
-            }
-        }
-    }
-
-    fun refreshUserById(userId: Long) {
-        viewModelScope.launch {
-            try {
-                userRepository.refreshUserById(userId)
-            } catch (e: Exception) {
-                _error.value = "Ошибка обновления пользователя: ${e.message}"
             }
         }
     }

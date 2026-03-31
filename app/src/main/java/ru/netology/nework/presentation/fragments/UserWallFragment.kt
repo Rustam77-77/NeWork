@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,48 +43,63 @@ class UserWallFragment : Fragment() {
             userId = it.getLong("userId", 0)
         }
 
+        setupObservers()
         initAdapter()
         setupRecyclerView()
-        setupObservers()
 
         wallViewModel.loadUserPosts(userId)
     }
 
     private fun initAdapter() {
+        // Получаем текущее значение или null
+        val currentUserId = authViewModel.currentUserId.value
+
         postAdapter = PostAdapter(
             onItemClickListener = { /* Не переходим в детали на стене */ },
             onLikeClickListener = { post -> wallViewModel.likePost(post) },
             onMenuClickListener = { _, _ -> },
-            currentUserId = authViewModel.currentUserId.value
+            currentUserId = currentUserId
         )
+
+        binding.recyclerView.adapter = postAdapter
     }
 
     private fun setupRecyclerView() {
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = postAdapter
+            // adapter устанавливается в initAdapter()
         }
     }
 
     private fun setupObservers() {
         wallViewModel.posts.observe(viewLifecycleOwner) { posts ->
             postAdapter.submitList(posts)
-            binding.emptyState.visibility = if (posts.isEmpty()) View.VISIBLE else View.GONE
+            binding.emptyState.isVisible = posts.isEmpty()
+            binding.progressBar.isVisible = false
         }
 
         wallViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) {
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.progressBar.visibility = View.GONE
-            }
+            binding.progressBar.isVisible = isLoading
         }
 
         wallViewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
                 wallViewModel.clearError()
+                binding.progressBar.isVisible = false
             }
+        }
+
+        // Обновляем адаптер при изменении текущего пользователя
+        authViewModel.currentUserId.observe(viewLifecycleOwner) { userId ->
+            postAdapter = PostAdapter(
+                onItemClickListener = { /* Не переходим в детали на стене */ },
+                onLikeClickListener = { post -> wallViewModel.likePost(post) },
+                onMenuClickListener = { _, _ -> },
+                currentUserId = userId
+            )
+            binding.recyclerView.adapter = postAdapter
+            postAdapter.submitList(wallViewModel.posts.value)
         }
     }
 

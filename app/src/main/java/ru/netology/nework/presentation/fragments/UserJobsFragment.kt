@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,7 +26,6 @@ class UserJobsFragment : Fragment() {
 
     private lateinit var jobAdapter: JobAdapter
     private var userId: Long = 0
-    private var isOwnProfile: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +41,6 @@ class UserJobsFragment : Fragment() {
 
         arguments?.let {
             userId = it.getLong("userId", 0)
-            isOwnProfile = it.getBoolean("isOwnProfile", false)
         }
 
         initAdapter()
@@ -65,15 +64,12 @@ class UserJobsFragment : Fragment() {
     private fun setupObservers() {
         jobsViewModel.jobs.observe(viewLifecycleOwner) { jobs ->
             jobAdapter.submitList(jobs)
-            binding.emptyState.visibility = if (jobs.isEmpty()) View.VISIBLE else View.GONE
+            binding.emptyState.isVisible = jobs.isEmpty()
+            binding.progressBar.isVisible = false
         }
 
         jobsViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (isLoading) {
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.progressBar.visibility = View.GONE
-            }
+            binding.progressBar.isVisible = isLoading
         }
 
         jobsViewModel.error.observe(viewLifecycleOwner) { error ->

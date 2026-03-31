@@ -1,9 +1,12 @@
 package ru.netology.nework.presentation.fragments
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.snackbar.Snackbar
@@ -11,7 +14,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nework.databinding.FragmentEventDetailBinding
 import ru.netology.nework.presentation.viewmodels.EventViewModel
 import ru.netology.nework.presentation.viewmodels.UserViewModel
-import java.text.SimpleDateFormat
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -24,6 +28,11 @@ class EventDetailFragment : Fragment() {
     private val userViewModel: UserViewModel by viewModels()
 
     private var eventId: Long = 0
+
+    private val dateFormatter = DateTimeFormatter
+        .ofPattern("dd.MM.yyyy HH:mm")
+        .withLocale(Locale.getDefault())
+        .withZone(ZoneId.systemDefault())
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,7 +63,7 @@ class EventDetailFragment : Fragment() {
         }
 
         eventViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.progressBar.isVisible = isLoading
         }
 
         eventViewModel.error.observe(viewLifecycleOwner) { error ->
@@ -66,45 +75,40 @@ class EventDetailFragment : Fragment() {
     }
 
     private fun displayEvent(event: ru.netology.nework.dto.Event) {
-        val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-
         binding.apply {
             authorName.text = event.author
-            date.text = "Опубликовано: ${dateFormat.format(event.published)}"
-            eventDate.text = "Дата проведения: ${dateFormat.format(event.datetime)}"
+            date.text = "Опубликовано: ${dateFormatter.format(event.published)}"
+            eventDate.text = "Дата проведения: ${dateFormatter.format(event.datetime)}"
             eventType.text = if (event.type.name == "ONLINE") "Онлайн" else "Офлайн"
             content.text = event.content
             authorJob.text = event.authorJob ?: "В поиске работы"
 
-            // Ссылка
             if (event.link.isNullOrEmpty()) {
-                linkContainer.visibility = View.GONE
+                linkContainer.isVisible = false
             } else {
-                linkContainer.visibility = View.VISIBLE
+                linkContainer.isVisible = true
                 linkText.text = event.link
                 linkContainer.setOnClickListener {
-                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(event.link))
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.link))
                     startActivity(intent)
                 }
             }
 
-            // Участники
             if (event.participantIds.isEmpty()) {
-                participantsTitle.visibility = View.GONE
-                participantsList.visibility = View.GONE
+                participantsTitle.isVisible = false
+                participantsList.isVisible = false
             } else {
-                participantsTitle.visibility = View.VISIBLE
-                participantsList.visibility = View.VISIBLE
+                participantsTitle.isVisible = true
+                participantsList.isVisible = true
                 loadParticipants(event.participantIds)
             }
 
-            // Спикеры
             if (event.speakerIds.isEmpty()) {
-                speakersTitle.visibility = View.GONE
-                speakersList.visibility = View.GONE
+                speakersTitle.isVisible = false
+                speakersList.isVisible = false
             } else {
-                speakersTitle.visibility = View.VISIBLE
-                speakersList.visibility = View.VISIBLE
+                speakersTitle.isVisible = true
+                speakersList.isVisible = true
                 loadSpeakers(event.speakerIds)
             }
         }

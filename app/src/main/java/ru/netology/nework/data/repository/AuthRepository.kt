@@ -2,8 +2,6 @@ package ru.netology.nework.data.repository
 
 import ru.netology.nework.api.ApiService
 import ru.netology.nework.dto.AuthResponse
-import ru.netology.nework.dto.LoginRequest
-import ru.netology.nework.dto.RegisterRequest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,7 +17,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun login(login: String, password: String): Result<AuthResponse> {
         return try {
-            val response = apiService.login(LoginRequest(login, password))
+            val response = apiService.login(login, password)
             if (response.isSuccessful) {
                 response.body()?.let { authResponse ->
                     _authToken = authResponse.token
@@ -36,7 +34,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun register(login: String, name: String, password: String): Result<AuthResponse> {
         return try {
-            val response = apiService.register(RegisterRequest(login, name, password))
+            val response = apiService.register(login, name, password)
             if (response.isSuccessful) {
                 response.body()?.let { authResponse ->
                     _authToken = authResponse.token

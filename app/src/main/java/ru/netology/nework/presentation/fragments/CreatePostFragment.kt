@@ -8,6 +8,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.MenuProvider
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -92,7 +93,7 @@ class CreatePostFragment : Fragment() {
         }
 
         postViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.progressBar.isVisible = isLoading
         }
 
         postViewModel.error.observe(viewLifecycleOwner) { error ->
@@ -108,12 +109,6 @@ class CreatePostFragment : Fragment() {
                 postViewModel.clearCreated()
             }
         }
-
-        userViewModel.users.observe(viewLifecycleOwner) { users ->
-            if (users.isNotEmpty()) {
-                // Пользователи загружены
-            }
-        }
     }
 
     private fun setupListeners() {
@@ -123,34 +118,38 @@ class CreatePostFragment : Fragment() {
     }
 
     private fun showUserSelectionDialog() {
-        userViewModel.users.observe(viewLifecycleOwner) { users ->
-            val adapter = UserSelectionAdapter(
-                users = users,
-                selectedUserIds = selectedUsers,
-                onUserSelected = { userId, isChecked ->
-                    if (isChecked) {
-                        selectedUsers.add(userId)
-                    } else {
-                        selectedUsers.remove(userId)
-                    }
-                    updateSelectedUsersCount()
-                }
-            )
-
-            val dialogView = layoutInflater.inflate(R.layout.dialog_user_selection, null)
-            val recyclerView = dialogView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recyclerView)
-            recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
-            recyclerView.adapter = adapter
-
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Выберите упомянутых пользователей")
-                .setView(dialogView)
-                .setPositiveButton("ОК") { _, _ ->
-                    updateSelectedUsersCount()
-                }
-                .setNegativeButton("Отмена", null)
-                .show()
+        val users = userViewModel.users.value ?: emptyList()
+        if (users.isEmpty()) {
+            Snackbar.make(binding.root, "Загрузка пользователей...", Snackbar.LENGTH_SHORT).show()
+            return
         }
+
+        val adapter = UserSelectionAdapter(
+            users = users,
+            selectedUserIds = selectedUsers,
+            onUserSelected = { userId, isChecked ->
+                if (isChecked) {
+                    selectedUsers.add(userId)
+                } else {
+                    selectedUsers.remove(userId)
+                }
+                updateSelectedUsersCount()
+            }
+        )
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_user_selection, null)
+        val recyclerView = dialogView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recyclerView)
+        recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        recyclerView.adapter = adapter
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Выберите упомянутых пользователей")
+            .setView(dialogView)
+            .setPositiveButton("ОК") { _, _ ->
+                updateSelectedUsersCount()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     private fun updateSelectedUsersCount() {

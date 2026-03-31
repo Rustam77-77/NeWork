@@ -6,6 +6,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -34,6 +35,7 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         setupTextWatchers()
         setupObservers()
         setupListeners()
@@ -57,7 +59,7 @@ class LoginFragment : Fragment() {
     private fun setupObservers() {
         authViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.buttonLogin.isEnabled = !isLoading
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.progressBar.isVisible = isLoading
         }
 
         authViewModel.error.observe(viewLifecycleOwner) { error ->

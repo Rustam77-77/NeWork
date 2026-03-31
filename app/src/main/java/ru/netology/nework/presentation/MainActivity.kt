@@ -1,6 +1,7 @@
 package ru.netology.nework.presentation
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -16,19 +17,23 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
+    private val TAG = "MainActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        Log.d(TAG, "onCreate started")
 
         val navView: BottomNavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
 
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.postsFragment,
-                R.id.eventsFragment,
-                R.id.usersFragment
+                R.id.navigation_posts,
+                R.id.navigation_events,
+                R.id.navigation_users
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)

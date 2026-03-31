@@ -3,7 +3,7 @@ package ru.netology.nework.data.database.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import ru.netology.nework.dto.Job
-import java.util.Date
+import java.time.Instant
 
 @Entity(tableName = "jobs")
 data class JobEntity(
@@ -12,8 +12,8 @@ data class JobEntity(
     val userId: Long,
     val company: String,
     val position: String,
-    val startDate: Date,
-    val endDate: Date? = null
+    val startDate: Instant,
+    val endDate: Instant? = null
 )
 
 fun JobEntity.toModel(): Job {

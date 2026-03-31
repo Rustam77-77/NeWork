@@ -2,12 +2,14 @@ package ru.netology.nework.presentation.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nework.databinding.ItemPostBinding
 import ru.netology.nework.dto.Post
-import java.text.SimpleDateFormat
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class PostAdapter(
@@ -38,12 +40,15 @@ class PostAdapter(
         private val currentUserId: Long?
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        private val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+        private val dateFormatter = DateTimeFormatter
+            .ofPattern("dd.MM.yyyy HH:mm")
+            .withLocale(Locale.getDefault())
+            .withZone(ZoneId.systemDefault())
 
         fun bind(post: Post) {
             binding.apply {
                 authorName.text = post.author
-                date.text = dateFormat.format(post.published)
+                date.text = dateFormatter.format(post.published)
                 content.text = post.content
                 likeCount.text = post.likeOwnerIds.size.toString()
                 likeButton.isChecked = post.likedByMe
@@ -55,14 +60,14 @@ class PostAdapter(
                 avatarText.text = initials
 
                 if (post.attachment?.url.isNullOrEmpty()) {
-                    linkContainer.visibility = ViewGroup.GONE
+                    linkContainer.isVisible = false
                 } else {
-                    linkContainer.visibility = ViewGroup.VISIBLE
+                    linkContainer.isVisible = true
                     linkText.text = post.attachment?.url
                 }
 
                 val isAuthor = post.ownedByMe
-                menuButton.visibility = if (isAuthor) ViewGroup.VISIBLE else ViewGroup.GONE
+                menuButton.isVisible = isAuthor
 
                 root.setOnClickListener { onItemClickListener(post) }
                 likeButton.setOnClickListener { onLikeClickListener(post) }

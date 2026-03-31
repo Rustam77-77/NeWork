@@ -1,5 +1,6 @@
 package ru.netology.nework.presentation.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -12,6 +13,10 @@ class UserAdapter(
     private val onItemClickListener: (User) -> Unit
 ) : ListAdapter<User, UserAdapter.UserViewHolder>(UserDiffCallback()) {
 
+    companion object {
+        private const val TAG = "UserAdapter"
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
         val binding = ItemUserBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -22,7 +27,8 @@ class UserAdapter(
     }
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val user = getItem(position)
+        holder.bind(user)
     }
 
     class UserViewHolder(
@@ -35,14 +41,15 @@ class UserAdapter(
                 userName.text = user.name
                 userLogin.text = "@${user.login}"
 
-                // Инициалы пользователя
                 val initials = user.name.split(" ")
                     .take(2)
                     .map { it.firstOrNull() ?: '?' }
                     .joinToString("")
                 avatarText.text = initials
 
-                root.setOnClickListener { onItemClickListener(user) }
+                root.setOnClickListener {
+                    onItemClickListener(user)
+                }
             }
         }
     }
