@@ -82,8 +82,11 @@ class PostsFragment : Fragment() {
         }
 
         postViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            Log.d(TAG, "Loading: $isLoading")
             binding.progressBar.isVisible = isLoading
+        }
+
+        postViewModel.isRefreshing.observe(viewLifecycleOwner) { isRefreshing ->
+            binding.swipeRefresh.isRefreshing = isRefreshing
         }
 
         postViewModel.error.observe(viewLifecycleOwner) { error ->
@@ -146,6 +149,11 @@ class PostsFragment : Fragment() {
     }
 
     private fun showAuthDialog() {
+        // Проверяем, не авторизован ли пользователь уже
+        if (authViewModel.isAuthenticated.value == true) {
+            return
+        }
+
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Требуется авторизация")
             .setMessage("Для создания поста необходимо войти в аккаунт")

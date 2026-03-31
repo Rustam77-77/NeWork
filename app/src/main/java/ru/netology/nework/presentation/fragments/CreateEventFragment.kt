@@ -106,8 +106,8 @@ class CreateEventFragment : Fragment() {
                 binding.eventContent.setText(it.content)
                 selectedDateTime = it.datetime
                 eventType = it.type
-                selectedSpeakers.addAll(it.speakerIds)
-                selectedParticipants.addAll(it.participantIds)
+                selectedSpeakers.addAll(it.speakersIds)
+                selectedParticipants.addAll(it.participantsIds)
 
                 updateDateTimeDisplay()
                 updateSelectedSpeakersCount()
@@ -298,16 +298,16 @@ class CreateEventFragment : Fragment() {
                 content = content,
                 datetime = selectedDateTime,
                 type = eventType,
-                speakerIds = selectedSpeakers,
-                participantIds = selectedParticipants
+                speakersIds = selectedSpeakers,
+                participantsIds = selectedParticipants
             )
         } else {
             eventViewModel.createEvent(
                 content = content,
                 datetime = selectedDateTime,
                 type = eventType,
-                speakerIds = selectedSpeakers,
-                participantIds = selectedParticipants,
+                speakersIds = selectedSpeakers,
+                participantsIds = selectedParticipants,
                 authorId = currentUserId,
                 author = currentUserName
             )

@@ -148,6 +148,11 @@ class EventsFragment : Fragment() {
     }
 
     private fun showAuthDialog() {
+        // Проверяем, не авторизован ли пользователь уже
+        if (authViewModel.isAuthenticated.value == true) {
+            return
+        }
+
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Требуется авторизация")
             .setMessage("Для создания события необходимо войти в аккаунт")

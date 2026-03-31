@@ -20,8 +20,8 @@ data class EventEntity(
     val likedByMe: Boolean = false,
     val likeOwnerIds: List<Long> = emptyList(),
     val link: String? = null,
-    val participantIds: List<Long> = emptyList(),
-    val speakerIds: List<Long> = emptyList(),
+    val participantsIds: List<Long> = emptyList(),  // Исправлено: participantsIds
+    val speakersIds: List<Long> = emptyList(),      // speakersIds
     val ownedByMe: Boolean = false,
     val authorJob: String? = null
 )
@@ -39,8 +39,8 @@ fun EventEntity.toModel(): Event {
         likedByMe = likedByMe,
         likeOwnerIds = likeOwnerIds,
         link = link,
-        participantIds = participantIds,
-        speakerIds = speakerIds,
+        participantsIds = participantsIds,
+        speakersIds = speakersIds,
         ownedByMe = ownedByMe,
         authorJob = authorJob
     )
@@ -59,8 +59,8 @@ fun Event.toEntity(): EventEntity {
         likedByMe = likedByMe,
         likeOwnerIds = likeOwnerIds,
         link = link,
-        participantIds = participantIds,
-        speakerIds = speakerIds,
+        participantsIds = participantsIds,  // Исправлено
+        speakersIds = speakersIds,          // Исправлено
         ownedByMe = ownedByMe,
         authorJob = authorJob
     )

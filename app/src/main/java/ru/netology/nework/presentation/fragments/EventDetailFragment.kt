@@ -94,22 +94,22 @@ class EventDetailFragment : Fragment() {
                 }
             }
 
-            if (event.participantIds.isEmpty()) {
+            if (event.participantsIds.isEmpty()) {
                 participantsTitle.isVisible = false
                 participantsList.isVisible = false
             } else {
                 participantsTitle.isVisible = true
                 participantsList.isVisible = true
-                loadParticipants(event.participantIds)
+                loadParticipants(event.participantsIds)
             }
 
-            if (event.speakerIds.isEmpty()) {
+            if (event.speakersIds.isEmpty()) {
                 speakersTitle.isVisible = false
                 speakersList.isVisible = false
             } else {
                 speakersTitle.isVisible = true
                 speakersList.isVisible = true
-                loadSpeakers(event.speakerIds)
+                loadSpeakers(event.speakersIds)
             }
         }
     }

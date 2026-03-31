@@ -33,8 +33,8 @@ class EventRepository @Inject constructor(
                     likedByMe = entity.likedByMe,
                     likeOwnerIds = entity.likeOwnerIds,
                     link = entity.link,
-                    participantIds = entity.participantIds,
-                    speakerIds = entity.speakerIds,
+                    participantsIds = entity.participantsIds,
+                    speakersIds = entity.speakersIds,
                     ownedByMe = entity.ownedByMe,
                     authorJob = entity.authorJob
                 )
@@ -56,8 +56,8 @@ class EventRepository @Inject constructor(
                     likedByMe = it.likedByMe,
                     likeOwnerIds = it.likeOwnerIds,
                     link = it.link,
-                    participantIds = it.participantIds,
-                    speakerIds = it.speakerIds,
+                    participantsIds = it.participantsIds,
+                    speakersIds = it.speakersIds,
                     ownedByMe = it.ownedByMe,
                     authorJob = it.authorJob
                 )
@@ -87,8 +87,8 @@ class EventRepository @Inject constructor(
                             likedByMe = event.likedByMe,
                             likeOwnerIds = event.likeOwnerIds,
                             link = event.link,
-                            participantIds = event.participantIds,
-                            speakerIds = event.speakerIds,
+                            participantsIds = event.participantsIds,
+                            speakersIds = event.speakersIds,
                             ownedByMe = event.ownedByMe,
                             authorJob = event.authorJob
                         )
@@ -127,8 +127,8 @@ class EventRepository @Inject constructor(
                         likedByMe = updatedEvent.likedByMe,
                         likeOwnerIds = updatedEvent.likeOwnerIds,
                         link = updatedEvent.link,
-                        participantIds = updatedEvent.participantIds,
-                        speakerIds = updatedEvent.speakerIds,
+                        participantsIds = updatedEvent.participantsIds,
+                        speakersIds = updatedEvent.speakersIds,
                         ownedByMe = updatedEvent.ownedByMe,
                         authorJob = updatedEvent.authorJob
                     )
@@ -162,8 +162,8 @@ class EventRepository @Inject constructor(
                         likedByMe = updatedEvent.likedByMe,
                         likeOwnerIds = updatedEvent.likeOwnerIds,
                         link = updatedEvent.link,
-                        participantIds = updatedEvent.participantIds,
-                        speakerIds = updatedEvent.speakerIds,
+                        participantsIds = updatedEvent.participantsIds,
+                        speakersIds = updatedEvent.speakersIds,
                         ownedByMe = updatedEvent.ownedByMe,
                         authorJob = updatedEvent.authorJob
                     )
@@ -202,8 +202,8 @@ class EventRepository @Inject constructor(
                         likedByMe = updatedEvent.likedByMe,
                         likeOwnerIds = updatedEvent.likeOwnerIds,
                         link = updatedEvent.link,
-                        participantIds = updatedEvent.participantIds,
-                        speakerIds = updatedEvent.speakerIds,
+                        participantsIds = updatedEvent.participantsIds,
+                        speakersIds = updatedEvent.speakersIds,
                         ownedByMe = updatedEvent.ownedByMe,
                         authorJob = updatedEvent.authorJob
                     )

@@ -77,6 +77,7 @@ class RegisterFragment : Fragment() {
 
         authViewModel.isAuthenticated.observe(viewLifecycleOwner) { isAuthenticated ->
             if (isAuthenticated) {
+                // Закрываем экран регистрации и возвращаемся на предыдущий экран
                 findNavController().popBackStack()
             }
         }

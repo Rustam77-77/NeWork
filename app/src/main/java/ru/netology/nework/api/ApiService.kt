@@ -2,11 +2,7 @@ package ru.netology.nework.api
 
 import retrofit2.Response
 import retrofit2.http.*
-import ru.netology.nework.dto.AuthResponse
-import ru.netology.nework.dto.Event
-import ru.netology.nework.dto.Job
-import ru.netology.nework.dto.Post
-import ru.netology.nework.dto.User
+import ru.netology.nework.dto.*
 
 interface ApiService {
 
@@ -15,15 +11,15 @@ interface ApiService {
     @POST("api/users/authentication")
     suspend fun login(
         @Field("login") login: String,
-        @Field("password") password: String
+        @Field("pass") password: String  // Изменено с password на pass
     ): Response<AuthResponse>
 
     @FormUrlEncoded
-    @POST("api/users")
+    @POST("api/users/registration")  // Изменен эндпоинт
     suspend fun register(
         @Field("login") login: String,
         @Field("name") name: String,
-        @Field("password") password: String
+        @Field("pass") password: String  // Изменено с password на pass
     ): Response<AuthResponse>
 
     // ==================== Posts ====================

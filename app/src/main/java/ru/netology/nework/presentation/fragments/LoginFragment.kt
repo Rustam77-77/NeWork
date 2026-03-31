@@ -71,6 +71,7 @@ class LoginFragment : Fragment() {
 
         authViewModel.isAuthenticated.observe(viewLifecycleOwner) { isAuthenticated ->
             if (isAuthenticated) {
+                // Закрываем экран входа и возвращаемся на предыдущий экран
                 findNavController().popBackStack()
             }
         }

@@ -112,8 +112,8 @@ class EventViewModel @Inject constructor(
         content: String,
         datetime: Instant,
         type: EventType,
-        speakerIds: List<Long>,
-        participantIds: List<Long>,
+        speakersIds: List<Long>,
+        participantsIds: List<Long>,
         authorId: Long,
         author: String
     ) {
@@ -129,8 +129,8 @@ class EventViewModel @Inject constructor(
                     published = Instant.now(),
                     datetime = datetime,
                     type = type,
-                    speakerIds = speakerIds,
-                    participantIds = participantIds
+                    speakersIds = speakersIds,
+                    participantsIds = participantsIds
                 )
                 val result = eventRepository.saveEvent(event)
                 if (result != null) {
@@ -152,8 +152,8 @@ class EventViewModel @Inject constructor(
         content: String,
         datetime: Instant,
         type: EventType,
-        speakerIds: List<Long>,
-        participantIds: List<Long>
+        speakersIds: List<Long>,
+        participantsIds: List<Long>
     ) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -165,8 +165,8 @@ class EventViewModel @Inject constructor(
                         content = content,
                         datetime = datetime,
                         type = type,
-                        speakerIds = speakerIds,
-                        participantIds = participantIds
+                        speakersIds = speakersIds,
+                        participantsIds = participantsIds
                     )
                     val result = eventRepository.saveEvent(updatedEvent)
                     if (result != null) {

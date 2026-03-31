@@ -25,8 +25,8 @@ data class Event(
     val likedByMe: Boolean = false,
     val likeOwnerIds: List<Long> = emptyList(),
     val link: String? = null,
-    val participantIds: List<Long> = emptyList(),
-    val speakerIds: List<Long> = emptyList(),
+    val participantsIds: List<Long> = emptyList(),  // participantsIds
+    val speakersIds: List<Long> = emptyList(),      // speakersIds
     val ownedByMe: Boolean = false,
     val authorJob: String? = null
 ) : Parcelable
