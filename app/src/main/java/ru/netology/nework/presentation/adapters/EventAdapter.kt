@@ -1,5 +1,7 @@
 package ru.netology.nework.presentation.adapters
 
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
@@ -8,8 +10,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nework.databinding.ItemEventBinding
 import ru.netology.nework.dto.Event
-import java.text.SimpleDateFormat
-import java.util.Locale
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class EventAdapter(
     private val onItemClickListener: (Event) -> Unit,
@@ -39,13 +42,20 @@ class EventAdapter(
         private val currentUserId: Long?
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        private val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+        // ИСПРАВЛЕНО: используем DateTimeFormatter вместо SimpleDateFormat
+        private val dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+            .withZone(ZoneId.systemDefault())
 
         fun bind(event: Event) {
             binding.apply {
                 authorName.text = event.author
-                date.text = "Опубликовано: ${dateFormat.format(event.published)}"
-                eventDate.text = "Дата проведения: ${dateFormat.format(event.datetime)}"
+
+                // ИСПРАВЛЕНО: форматирование Instant без ошибок
+                val publishedFormatted = dateTimeFormatter.format(event.published)
+                val datetimeFormatted = dateTimeFormatter.format(event.datetime)
+
+                date.text = "Опубликовано: $publishedFormatted"
+                eventDate.text = "Дата проведения: $datetimeFormatted"
                 eventType.text = if (event.type.name == "ONLINE") "Онлайн" else "Офлайн"
                 content.text = event.content
                 likeCount.text = event.likeOwnerIds.size.toString()
@@ -72,7 +82,7 @@ class EventAdapter(
                 menuButton.setOnClickListener { onMenuClickListener(event, isAuthor) }
 
                 linkContainer.setOnClickListener {
-                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(event.link))
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(event.link))
                     root.context.startActivity(intent)
                 }
             }

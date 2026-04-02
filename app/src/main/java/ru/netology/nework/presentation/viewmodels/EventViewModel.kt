@@ -108,11 +108,12 @@ class EventViewModel @Inject constructor(
         }
     }
 
+    // ИСПРАВЛЕНО: speakersIds → speakerIds
     fun createEvent(
         content: String,
         datetime: Instant,
         type: EventType,
-        speakersIds: List<Long>,
+        speakerIds: List<Long>,  // ИСПРАВЛЕНО
         participantsIds: List<Long>,
         authorId: Long,
         author: String
@@ -129,7 +130,7 @@ class EventViewModel @Inject constructor(
                     published = Instant.now(),
                     datetime = datetime,
                     type = type,
-                    speakersIds = speakersIds,
+                    speakerIds = speakerIds,  // ИСПРАВЛЕНО
                     participantsIds = participantsIds
                 )
                 val result = eventRepository.saveEvent(event)
@@ -147,12 +148,13 @@ class EventViewModel @Inject constructor(
         }
     }
 
+    // ИСПРАВЛЕНО: speakersIds → speakerIds
     fun updateEvent(
         eventId: Long,
         content: String,
         datetime: Instant,
         type: EventType,
-        speakersIds: List<Long>,
+        speakerIds: List<Long>,  // ИСПРАВЛЕНО
         participantsIds: List<Long>
     ) {
         viewModelScope.launch {
@@ -165,7 +167,7 @@ class EventViewModel @Inject constructor(
                         content = content,
                         datetime = datetime,
                         type = type,
-                        speakersIds = speakersIds,
+                        speakerIds = speakerIds,  // ИСПРАВЛЕНО
                         participantsIds = participantsIds
                     )
                     val result = eventRepository.saveEvent(updatedEvent)

@@ -103,13 +103,13 @@ class EventDetailFragment : Fragment() {
                 loadParticipants(event.participantsIds)
             }
 
-            if (event.speakersIds.isEmpty()) {
+            if (event.speakerIds.isEmpty()) {  // ИСПРАВЛЕНО: было speakersIds
                 speakersTitle.isVisible = false
                 speakersList.isVisible = false
             } else {
                 speakersTitle.isVisible = true
                 speakersList.isVisible = true
-                loadSpeakers(event.speakersIds)
+                loadSpeakers(event.speakerIds)  // ИСПРАВЛЕНО: было speakersIds
             }
         }
     }

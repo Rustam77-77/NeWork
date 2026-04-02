@@ -1,8 +1,10 @@
 package ru.netology.nework.di
 
+import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ru.netology.nework.api.ApiService
 import ru.netology.nework.data.database.dao.*
@@ -15,8 +17,19 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(apiService: ApiService): AuthRepository {
-        return AuthRepository(apiService)
+    fun provideTokenManager(
+        @ApplicationContext context: Context
+    ): TokenManager {
+        return TokenManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(
+        apiService: ApiService,
+        tokenManager: TokenManager
+    ): AuthRepository {
+        return AuthRepository(apiService, tokenManager)
     }
 
     @Provides
@@ -34,7 +47,7 @@ object RepositoryModule {
         eventDao: EventDao,
         apiService: ApiService
     ): EventRepository {
-        return EventRepository(eventDao, apiService)
+        return EventRepositoryImpl(eventDao, apiService)
     }
 
     @Provides

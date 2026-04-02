@@ -7,35 +7,36 @@ import ru.netology.nework.dto.EventType
 import java.time.Instant
 
 class Converters {
+
     @TypeConverter
-    fun fromTimestamp(value: Long?): Instant? {
-        return value?.let { Instant.ofEpochMilli(it) }
+    fun fromInstant(value: Instant?): String? {
+        return value?.toString()
     }
 
     @TypeConverter
-    fun dateToTimestamp(date: Instant?): Long? {
-        return date?.toEpochMilli()
+    fun toInstant(value: String?): Instant? {
+        return value?.let { Instant.parse(it) }
     }
 
     @TypeConverter
-    fun fromStringList(value: String): List<Long> {
-        if (value.isEmpty()) return emptyList()
-        val listType = object : TypeToken<List<Long>>() {}.type
-        return Gson().fromJson(value, listType)
+    fun fromEventType(value: EventType?): String? {
+        return value?.name
     }
 
     @TypeConverter
-    fun fromListLong(list: List<Long>): String {
-        return Gson().toJson(list)
+    fun toEventType(value: String?): EventType? {
+        return value?.let { EventType.valueOf(it) }
     }
 
     @TypeConverter
-    fun fromEventType(type: EventType): String {
-        return type.name
+    fun fromLongList(value: List<Long>?): String? {
+        return Gson().toJson(value)
     }
 
     @TypeConverter
-    fun toEventType(type: String): EventType {
-        return EventType.valueOf(type)
+    fun toLongList(value: String?): List<Long> {
+        if (value.isNullOrEmpty()) return emptyList()
+        val type = object : TypeToken<List<Long>>() {}.type
+        return Gson().fromJson(value, type)
     }
 }

@@ -106,7 +106,7 @@ class CreateEventFragment : Fragment() {
                 binding.eventContent.setText(it.content)
                 selectedDateTime = it.datetime
                 eventType = it.type
-                selectedSpeakers.addAll(it.speakersIds)
+                selectedSpeakers.addAll(it.speakerIds)  // ИСПРАВЛЕНО
                 selectedParticipants.addAll(it.participantsIds)
 
                 updateDateTimeDisplay()
@@ -298,7 +298,7 @@ class CreateEventFragment : Fragment() {
                 content = content,
                 datetime = selectedDateTime,
                 type = eventType,
-                speakersIds = selectedSpeakers,
+                speakerIds = selectedSpeakers,  // ИСПРАВЛЕНО: было speakersIds
                 participantsIds = selectedParticipants
             )
         } else {
@@ -306,7 +306,7 @@ class CreateEventFragment : Fragment() {
                 content = content,
                 datetime = selectedDateTime,
                 type = eventType,
-                speakersIds = selectedSpeakers,
+                speakerIds = selectedSpeakers,  // ИСПРАВЛЕНО: было speakersIds
                 participantsIds = selectedParticipants,
                 authorId = currentUserId,
                 author = currentUserName

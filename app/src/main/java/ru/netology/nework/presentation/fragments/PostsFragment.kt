@@ -107,6 +107,7 @@ class PostsFragment : Fragment() {
 
     private fun setupListeners() {
         binding.fabAdd.setOnClickListener {
+            // ИСПРАВЛЕНО: проверка авторизации перед показом диалога
             if (authViewModel.isAuthenticated.value == true) {
                 findNavController().navigate(R.id.createPostFragment)
             } else {
@@ -148,9 +149,11 @@ class PostsFragment : Fragment() {
             .show()
     }
 
+    // ИСПРАВЛЕНО: дополнительная проверка, чтобы диалог не показывался после входа
     private fun showAuthDialog() {
         // Проверяем, не авторизован ли пользователь уже
         if (authViewModel.isAuthenticated.value == true) {
+            Log.d(TAG, "User is already authenticated, skipping auth dialog")
             return
         }
 

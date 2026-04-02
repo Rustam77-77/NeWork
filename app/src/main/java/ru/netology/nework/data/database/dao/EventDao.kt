@@ -1,19 +1,17 @@
 package ru.netology.nework.data.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import ru.netology.nework.data.database.entities.EventEntity
+import androidx.room.*
 import kotlinx.coroutines.flow.Flow
+import ru.netology.nework.data.database.entities.EventEntity
 
 @Dao
 interface EventDao {
-    @Query("SELECT * FROM events ORDER BY datetime DESC")
-    fun getAllEvents(): Flow<List<EventEntity>>
 
-    @Query("SELECT * FROM events WHERE id = :eventId")
-    fun getEventById(eventId: Long): Flow<EventEntity?>
+    @Query("SELECT * FROM events ORDER BY datetime DESC")
+    fun getAll(): Flow<List<EventEntity>>
+
+    @Query("SELECT * FROM events WHERE id = :id")
+    fun getById(id: Long): Flow<EventEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(event: EventEntity)
@@ -21,8 +19,14 @@ interface EventDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(events: List<EventEntity>)
 
-    @Query("DELETE FROM events WHERE id = :eventId")
-    suspend fun deleteById(eventId: Long)
+    @Update
+    suspend fun update(event: EventEntity)
+
+    @Delete
+    suspend fun delete(event: EventEntity)
+
+    @Query("DELETE FROM events WHERE id = :id")
+    suspend fun deleteById(id: Long)
 
     @Query("DELETE FROM events")
     suspend fun deleteAll()

@@ -1,5 +1,8 @@
 package ru.netology.nework.data.repository
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import ru.netology.nework.api.ApiService
 import ru.netology.nework.dto.AuthResponse
 import javax.inject.Inject
@@ -7,23 +10,30 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthRepository @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val tokenManager: TokenManager
 ) {
-    private var _authToken: String? = null
-    private var _currentUserId: Long? = null
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
+    val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    val authToken: String? get() = _authToken
-    val currentUserId: Long? get() = _currentUserId
+    init {
+        val token = tokenManager.getToken()
+        val userId = tokenManager.getUserId()
+        if (token != null && userId != null) {
+            _authState.value = AuthState.Authenticated(token, userId)
+        }
+    }
 
     suspend fun login(login: String, password: String): Result<AuthResponse> {
         return try {
             val response = apiService.login(login, password)
             if (response.isSuccessful) {
                 response.body()?.let { authResponse ->
-                    _authToken = authResponse.token
-                    _currentUserId = authResponse.userId
+                    tokenManager.saveToken(authResponse.token)
+                    tokenManager.saveUserId(authResponse.userId)
+                    _authState.value = AuthState.Authenticated(authResponse.token, authResponse.userId)
                     Result.success(authResponse)
-                } ?: Result.failure(Exception("Empty response body"))
+                } ?: Result.failure(Exception("Empty response"))
             } else {
                 Result.failure(Exception("Login failed: ${response.code()}"))
             }
@@ -37,10 +47,11 @@ class AuthRepository @Inject constructor(
             val response = apiService.register(login, name, password)
             if (response.isSuccessful) {
                 response.body()?.let { authResponse ->
-                    _authToken = authResponse.token
-                    _currentUserId = authResponse.userId
+                    tokenManager.saveToken(authResponse.token)
+                    tokenManager.saveUserId(authResponse.userId)
+                    _authState.value = AuthState.Authenticated(authResponse.token, authResponse.userId)
                     Result.success(authResponse)
-                } ?: Result.failure(Exception("Empty response body"))
+                } ?: Result.failure(Exception("Empty response"))
             } else {
                 Result.failure(Exception("Registration failed: ${response.code()}"))
             }
@@ -50,9 +61,23 @@ class AuthRepository @Inject constructor(
     }
 
     fun logout() {
-        _authToken = null
-        _currentUserId = null
+        tokenManager.clear()
+        _authState.value = AuthState.Unauthenticated
     }
 
-    fun isAuthenticated(): Boolean = _authToken != null
+    fun isAuthenticated(): Boolean {
+        return tokenManager.isAuthenticated()
+    }
+
+    val currentUserId: Long?
+        get() = tokenManager.getUserId()
+
+    fun getToken(): String? {
+        return tokenManager.getToken()
+    }
+}
+
+sealed class AuthState {
+    data class Authenticated(val token: String, val userId: Long) : AuthState()
+    object Unauthenticated : AuthState()
 }
