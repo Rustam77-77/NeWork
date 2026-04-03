@@ -17,7 +17,7 @@ class AuthInterceptor @Inject constructor(
 
         val request = if (!token.isNullOrBlank()) {
             originalRequest.newBuilder()
-                .header("Authorization", "Bearer $token")
+                .header("Authorization", token)  // Убрано "Bearer "
                 .build()
         } else {
             originalRequest

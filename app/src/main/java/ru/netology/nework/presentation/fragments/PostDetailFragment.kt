@@ -28,6 +28,7 @@ class PostDetailFragment : Fragment() {
     private val userViewModel: UserViewModel by viewModels()
 
     private var postId: Long = 0
+    private var isDataLoaded = false
 
     private val dateFormatter = DateTimeFormatter
         .ofPattern("dd.MM.yyyy HH:mm")
@@ -46,39 +47,37 @@ class PostDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Настройка toolbar, если он существует в layout
-        try {
-            (activity as? AppCompatActivity)?.setSupportActionBar(binding.toolbar)
-            (activity as? AppCompatActivity)?.supportActionBar?.apply {
-                setDisplayHomeAsUpEnabled(true)
-                setDisplayShowHomeEnabled(true)
-                title = "Детали поста"
-            }
-            binding.toolbar.setNavigationOnClickListener {
-                findNavController().navigateUp()
-            }
-        } catch (e: Exception) {
-            // Если toolbar отсутствует, используем кнопку назад из action bar
-            (activity as? AppCompatActivity)?.supportActionBar?.apply {
-                setDisplayHomeAsUpEnabled(true)
-                setDisplayShowHomeEnabled(true)
-                title = "Детали поста"
-            }
-        }
-
         arguments?.let {
             postId = it.getLong("postId", 0)
         }
 
+        setupToolbar()
         setupObservers()
-        postViewModel.loadPostById(postId)
-        userViewModel.loadUsers()
+
+        if (!isDataLoaded) {
+            postViewModel.loadPostById(postId)
+            userViewModel.loadUsers()
+        }
+    }
+
+    private fun setupToolbar() {
+        // Скрываем ActionBar если он есть
+        (activity as? AppCompatActivity)?.supportActionBar?.hide()
+
+        // Настраиваем toolbar
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
+
+        binding.toolbar.title = "Детали поста"
     }
 
     private fun setupObservers() {
         postViewModel.post.observe(viewLifecycleOwner) { post ->
             post?.let {
+                isDataLoaded = true
                 displayPost(it)
+                binding.progressBar.isVisible = false
             }
         }
 
@@ -88,6 +87,7 @@ class PostDetailFragment : Fragment() {
 
         postViewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
+                binding.progressBar.isVisible = false
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
                 postViewModel.clearError()
             }

@@ -4,16 +4,12 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.MenuProvider
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -65,12 +61,13 @@ class CreateEventFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupToolbar()
+
         arguments?.let {
             eventId = it.getLong("eventId", 0)
             isEditMode = eventId != 0L
         }
 
-        setupMenu()
         setupObservers()
         setupListeners()
         updateDateTimeDisplay()
@@ -82,22 +79,26 @@ class CreateEventFragment : Fragment() {
         }
     }
 
-    private fun setupMenu() {
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.save_menu, menu)
-            }
+    private fun setupToolbar() {
+        // Скрываем ActionBar если он есть
+        (activity as? AppCompatActivity)?.supportActionBar?.hide()
 
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.save -> {
-                        saveEvent()
-                        true
-                    }
-                    else -> false
+        // Настраиваем toolbar
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
+
+        binding.toolbar.title = if (isEditMode) "Редактирование события" else "Создание события"
+        binding.toolbar.inflateMenu(R.menu.save_menu)
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.save -> {
+                    saveEvent()
+                    true
                 }
+                else -> false
             }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        }
     }
 
     private fun setupObservers() {
@@ -106,7 +107,7 @@ class CreateEventFragment : Fragment() {
                 binding.eventContent.setText(it.content)
                 selectedDateTime = it.datetime
                 eventType = it.type
-                selectedSpeakers.addAll(it.speakerIds)  // ИСПРАВЛЕНО
+                selectedSpeakers.addAll(it.speakerIds)
                 selectedParticipants.addAll(it.participantsIds)
 
                 updateDateTimeDisplay()
@@ -298,7 +299,7 @@ class CreateEventFragment : Fragment() {
                 content = content,
                 datetime = selectedDateTime,
                 type = eventType,
-                speakerIds = selectedSpeakers,  // ИСПРАВЛЕНО: было speakersIds
+                speakerIds = selectedSpeakers,
                 participantsIds = selectedParticipants
             )
         } else {
@@ -306,7 +307,7 @@ class CreateEventFragment : Fragment() {
                 content = content,
                 datetime = selectedDateTime,
                 type = eventType,
-                speakerIds = selectedSpeakers,  // ИСПРАВЛЕНО: было speakersIds
+                speakerIds = selectedSpeakers,
                 participantsIds = selectedParticipants,
                 authorId = currentUserId,
                 author = currentUserName
