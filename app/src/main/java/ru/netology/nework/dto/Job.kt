@@ -10,10 +10,11 @@ import java.time.Instant
 data class Job(
     val id: Long,
     val userId: Long,
-    val company: String,
+    val name: String,
     val position: String,
     @JsonAdapter(InstantAdapter::class)
-    val startDate: Instant,
+    val start: Instant,
     @JsonAdapter(InstantAdapter::class)
-    val endDate: Instant? = null
+    val finish: Instant? = null,
+    val link: String? = null
 ) : Parcelable

@@ -48,10 +48,11 @@ class PostViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                postRepository.getAllPosts().collect { postList ->
-                    _posts.value = postList
-                }
+                val postsList = postRepository.getAllPosts()
+                _posts.value = postsList
+                Log.d(TAG, "Loaded ${postsList.size} posts")
             } catch (e: Exception) {
+                Log.e(TAG, "Error loading posts", e)
                 _error.value = "Ошибка загрузки постов: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -63,10 +64,11 @@ class PostViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                postRepository.getPostById(postId).collect { post ->
-                    _post.value = post
-                }
+                val postItem = postRepository.getPostById(postId)
+                _post.value = postItem
+                Log.d(TAG, "Loaded post with id: $postId")
             } catch (e: Exception) {
+                Log.e(TAG, "Error loading post", e)
                 _error.value = "Ошибка загрузки поста: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -79,7 +81,11 @@ class PostViewModel @Inject constructor(
             _isRefreshing.value = true
             try {
                 postRepository.refreshPosts()
+                val postsList = postRepository.getAllPosts()
+                _posts.value = postsList
+                Log.d(TAG, "Refreshed ${postsList.size} posts")
             } catch (e: Exception) {
+                Log.e(TAG, "Error refreshing posts", e)
                 _error.value = "Ошибка обновления постов: ${e.message}"
             } finally {
                 _isRefreshing.value = false
@@ -97,9 +103,11 @@ class PostViewModel @Inject constructor(
                 }
                 if (updatedPost != null) {
                     refreshPosts()
+                    Log.d(TAG, "Post ${post.id} liked/unliked")
                 }
             } catch (e: Exception) {
-                _error.value = "Ошибка при лайке поста"
+                Log.e(TAG, "Error liking post", e)
+                _error.value = "Ошибка при лайке поста: ${e.message}"
             }
         }
     }
@@ -115,16 +123,19 @@ class PostViewModel @Inject constructor(
                     author = author,
                     content = content,
                     published = Instant.now(),
-                    mentionIds = mentionIds
+                    mentionIds = mentionIds,
+                    likedByMe = false
                 )
                 val result = postRepository.savePost(post)
                 if (result != null) {
                     _isCreated.value = true
                     refreshPosts()
+                    Log.d(TAG, "Post created successfully")
                 } else {
                     _error.value = "Ошибка создания поста"
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error creating post", e)
                 _error.value = "Ошибка создания поста: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -146,11 +157,13 @@ class PostViewModel @Inject constructor(
                     val result = postRepository.savePost(updatedPost)
                     if (result != null) {
                         refreshPosts()
+                        Log.d(TAG, "Post updated successfully")
                     } else {
                         _error.value = "Ошибка обновления поста"
                     }
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error updating post", e)
                 _error.value = "Ошибка обновления поста: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -164,10 +177,12 @@ class PostViewModel @Inject constructor(
                 val result = postRepository.deletePost(postId)
                 if (result) {
                     refreshPosts()
+                    Log.d(TAG, "Post deleted successfully")
                 } else {
                     _error.value = "Ошибка удаления поста"
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error deleting post", e)
                 _error.value = "Ошибка удаления поста: ${e.message}"
             }
         }

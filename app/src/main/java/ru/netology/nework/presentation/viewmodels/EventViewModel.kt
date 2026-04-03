@@ -51,6 +51,7 @@ class EventViewModel @Inject constructor(
             try {
                 eventRepository.getAllEvents().collect { eventList ->
                     _events.value = eventList
+                    Log.d(TAG, "Loaded ${eventList.size} events")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading events", e)
@@ -67,8 +68,10 @@ class EventViewModel @Inject constructor(
             try {
                 eventRepository.getEventById(eventId).collect { event ->
                     _event.value = event
+                    Log.d(TAG, "Loaded event with id: $eventId")
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error loading event", e)
                 _error.value = "Ошибка загрузки события: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -81,7 +84,7 @@ class EventViewModel @Inject constructor(
             _isRefreshing.value = true
             try {
                 eventRepository.refreshEvents()
-                Log.d(TAG, "refreshEvents completed")
+                Log.d(TAG, "Events refreshed")
             } catch (e: Exception) {
                 Log.e(TAG, "Error refreshing events", e)
                 _error.value = "Ошибка обновления событий: ${e.message}"
@@ -101,19 +104,20 @@ class EventViewModel @Inject constructor(
                 }
                 if (updatedEvent != null) {
                     refreshEvents()
+                    Log.d(TAG, "Event ${event.id} liked/unliked")
                 }
             } catch (e: Exception) {
-                _error.value = "Ошибка при лайке события"
+                Log.e(TAG, "Error liking event", e)
+                _error.value = "Ошибка при лайке события: ${e.message}"
             }
         }
     }
 
-    // ИСПРАВЛЕНО: speakersIds → speakerIds
     fun createEvent(
         content: String,
         datetime: Instant,
         type: EventType,
-        speakerIds: List<Long>,  // ИСПРАВЛЕНО
+        speakerIds: List<Long>,
         participantsIds: List<Long>,
         authorId: Long,
         author: String
@@ -122,25 +126,24 @@ class EventViewModel @Inject constructor(
             _isLoading.value = true
             _isCreated.value = false
             try {
-                val event = Event(
-                    id = 0,
-                    authorId = authorId,
-                    author = author,
+                val result = eventRepository.createEvent(
                     content = content,
-                    published = Instant.now(),
                     datetime = datetime,
                     type = type,
-                    speakerIds = speakerIds,  // ИСПРАВЛЕНО
-                    participantsIds = participantsIds
+                    speakerIds = speakerIds,
+                    participantsIds = participantsIds,
+                    authorId = authorId,
+                    author = author
                 )
-                val result = eventRepository.saveEvent(event)
                 if (result != null) {
                     _isCreated.value = true
                     refreshEvents()
+                    Log.d(TAG, "Event created successfully")
                 } else {
                     _error.value = "Ошибка создания события"
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error creating event", e)
                 _error.value = "Ошибка создания события: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -148,36 +151,33 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    // ИСПРАВЛЕНО: speakersIds → speakerIds
     fun updateEvent(
         eventId: Long,
         content: String,
         datetime: Instant,
         type: EventType,
-        speakerIds: List<Long>,  // ИСПРАВЛЕНО
+        speakerIds: List<Long>,
         participantsIds: List<Long>
     ) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val currentEvents = _events.value ?: emptyList()
-                val existingEvent = currentEvents.find { it.id == eventId }
-                if (existingEvent != null) {
-                    val updatedEvent = existingEvent.copy(
-                        content = content,
-                        datetime = datetime,
-                        type = type,
-                        speakerIds = speakerIds,  // ИСПРАВЛЕНО
-                        participantsIds = participantsIds
-                    )
-                    val result = eventRepository.saveEvent(updatedEvent)
-                    if (result != null) {
-                        refreshEvents()
-                    } else {
-                        _error.value = "Ошибка обновления события"
-                    }
+                val result = eventRepository.updateEvent(
+                    id = eventId,
+                    content = content,
+                    datetime = datetime,
+                    type = type,
+                    speakerIds = speakerIds,
+                    participantsIds = participantsIds
+                )
+                if (result != null) {
+                    refreshEvents()
+                    Log.d(TAG, "Event updated successfully")
+                } else {
+                    _error.value = "Ошибка обновления события"
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error updating event", e)
                 _error.value = "Ошибка обновления события: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -191,10 +191,12 @@ class EventViewModel @Inject constructor(
                 val result = eventRepository.deleteEvent(eventId)
                 if (result) {
                     refreshEvents()
+                    Log.d(TAG, "Event deleted successfully")
                 } else {
                     _error.value = "Ошибка удаления события"
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error deleting event", e)
                 _error.value = "Ошибка удаления события: ${e.message}"
             }
         }

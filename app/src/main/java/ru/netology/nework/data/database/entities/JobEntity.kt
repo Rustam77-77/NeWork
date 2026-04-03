@@ -10,20 +10,22 @@ data class JobEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val userId: Long,
-    val company: String,
+    val name: String,
     val position: String,
-    val startDate: Instant,
-    val endDate: Instant? = null
+    val start: Instant,  // Поле должно называться start
+    val finish: Instant? = null,
+    val link: String? = null
 )
 
 fun JobEntity.toModel(): Job {
     return Job(
         id = id,
         userId = userId,
-        company = company,
+        name = name,
         position = position,
-        startDate = startDate,
-        endDate = endDate
+        start = start,
+        finish = finish,
+        link = link
     )
 }
 
@@ -31,9 +33,10 @@ fun Job.toEntity(): JobEntity {
     return JobEntity(
         id = id,
         userId = userId,
-        company = company,
+        name = name,
         position = position,
-        startDate = startDate,
-        endDate = endDate
+        start = start,
+        finish = finish,
+        link = link
     )
 }

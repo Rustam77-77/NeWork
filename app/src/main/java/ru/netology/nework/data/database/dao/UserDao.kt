@@ -1,19 +1,17 @@
 package ru.netology.nework.data.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import ru.netology.nework.data.database.entities.UserEntity
+import androidx.room.*
 import kotlinx.coroutines.flow.Flow
+import ru.netology.nework.data.database.entities.UserEntity
 
 @Dao
 interface UserDao {
-    @Query("SELECT * FROM users")
-    fun getAllUsers(): Flow<List<UserEntity>>
 
-    @Query("SELECT * FROM users WHERE id = :userId")
-    fun getUserById(userId: Long): Flow<UserEntity?>
+    @Query("SELECT * FROM users ORDER BY name ASC")
+    fun getAll(): Flow<List<UserEntity>>
+
+    @Query("SELECT * FROM users WHERE id = :id")
+    suspend fun getById(id: Long): UserEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(user: UserEntity)
@@ -21,6 +19,15 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(users: List<UserEntity>)
 
-    @Query("DELETE FROM users WHERE id = :userId")
-    suspend fun deleteById(userId: Long)
+    @Update
+    suspend fun update(user: UserEntity)
+
+    @Delete
+    suspend fun delete(user: UserEntity)
+
+    @Query("DELETE FROM users WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
+    @Query("DELETE FROM users")
+    suspend fun deleteAll()
 }

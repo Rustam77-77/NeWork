@@ -5,7 +5,7 @@ val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
-val apiKey = localProperties.getProperty("API_KEY") ?: ""
+val apiKey = localProperties.getProperty("API_KEY") ?: "c1378193-bc0e-42c8-a502-b8d66d189617"
 
 plugins {
     id("com.android.application")

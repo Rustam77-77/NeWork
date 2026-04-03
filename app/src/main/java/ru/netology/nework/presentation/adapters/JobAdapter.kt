@@ -7,11 +7,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nework.databinding.ItemJobBinding
 import ru.netology.nework.dto.Job
-import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class JobAdapter(
-    private val onDeleteClickListener: (Job) -> Unit
+    private val onJobClickListener: (Job) -> Unit
 ) : ListAdapter<Job, JobAdapter.JobViewHolder>(JobDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JobViewHolder {
@@ -20,7 +22,7 @@ class JobAdapter(
             parent,
             false
         )
-        return JobViewHolder(binding, onDeleteClickListener)
+        return JobViewHolder(binding, onJobClickListener)
     }
 
     override fun onBindViewHolder(holder: JobViewHolder, position: Int) {
@@ -29,21 +31,26 @@ class JobAdapter(
 
     class JobViewHolder(
         private val binding: ItemJobBinding,
-        private val onDeleteClickListener: (Job) -> Unit
+        private val onJobClickListener: (Job) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+        private val dateFormatter = DateTimeFormatter
+            .ofPattern("dd.MM.yyyy")
+            .withLocale(Locale.getDefault())
+            .withZone(ZoneId.systemDefault())
 
         fun bind(job: Job) {
             binding.apply {
-                companyName.text = job.company
-                position.text = job.position
+                jobName.text = job.name  // company -> name
+                positionName.text = job.position
 
-                val startDateStr = dateFormat.format(job.startDate)
-                val endDateStr = job.endDate?.let { dateFormat.format(it) } ?: "настоящее время"
-                period.text = "$startDateStr - $endDateStr"
+                val startDate = dateFormatter.format(job.start)
+                startDateText.text = startDate
 
-                deleteButton.setOnClickListener { onDeleteClickListener(job) }
+                val endDate = job.finish?.let { dateFormatter.format(it) } ?: "по настоящее время"
+                endDateText.text = endDate
+
+                root.setOnClickListener { onJobClickListener(job) }
             }
         }
     }

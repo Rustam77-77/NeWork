@@ -8,7 +8,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.netology.nework.data.repository.JobRepository
 import ru.netology.nework.dto.Job
-import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,107 +21,79 @@ class UserJobsViewModel @Inject constructor(
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
-    private val _isRefreshing = MutableLiveData(false)
-    val isRefreshing: LiveData<Boolean> = _isRefreshing
-
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
-    private val _isCreated = MutableLiveData(false)
-    val isCreated: LiveData<Boolean> = _isCreated
-
-    private val _isDeleted = MutableLiveData(false)
-    val isDeleted: LiveData<Boolean> = _isDeleted
-
-    private var currentUserId: Long = 0
-
-    fun loadJobsForUser(userId: Long) {
-        currentUserId = userId
+    fun loadUserJobs(userId: Long) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                jobRepository.getJobsForUser(userId).collect { jobList ->
-                    _jobs.value = jobList
-                }
+                val jobsList = jobRepository.getJobsForUser(userId)
+                _jobs.value = jobsList
             } catch (e: Exception) {
-                _error.value = "Ошибка загрузки мест работы: ${e.message}"
+                _error.value = e.message
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    fun refreshJobs() {
-        if (currentUserId != 0L) {
-            viewModelScope.launch {
-                _isRefreshing.value = true
-                try {
-                    jobRepository.refreshJobsForUser(currentUserId)
-                } catch (e: Exception) {
-                    _error.value = "Ошибка обновления мест работы: ${e.message}"
-                } finally {
-                    _isRefreshing.value = false
-                }
+    fun refreshJobsForUser(userId: Long) {
+        viewModelScope.launch {
+            try {
+                jobRepository.refreshJobs(userId)
+                val jobsList = jobRepository.getJobsForUser(userId)
+                _jobs.value = jobsList
+            } catch (e: Exception) {
+                _error.value = e.message
             }
         }
     }
 
-    fun createJob(company: String, position: String, startDate: Instant, endDate: Instant?) {
-        if (currentUserId == 0L) return
-
+    fun createJob(
+        userId: Long,
+        name: String,
+        position: String,
+        start: java.time.Instant,
+        finish: java.time.Instant? = null,
+        link: String? = null
+    ) {
         viewModelScope.launch {
             _isLoading.value = true
-            _isCreated.value = false
             try {
                 val job = Job(
                     id = 0,
-                    userId = currentUserId,
-                    company = company,
+                    userId = userId,
+                    name = name,
                     position = position,
-                    startDate = startDate,
-                    endDate = endDate
+                    start = start,
+                    finish = finish,
+                    link = link
                 )
                 val result = jobRepository.createJob(job)
                 if (result != null) {
-                    _isCreated.value = true
-                    refreshJobs()
-                } else {
-                    _error.value = "Ошибка создания места работы"
+                    loadUserJobs(userId)
                 }
             } catch (e: Exception) {
-                _error.value = "Ошибка создания места работы: ${e.message}"
+                _error.value = e.message
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    fun deleteJob(jobId: Long) {
+    fun deleteJob(jobId: Long, userId: Long) {
         viewModelScope.launch {
-            _isDeleted.value = false
             try {
-                val success = jobRepository.deleteJob(jobId)
-                if (success) {
-                    _isDeleted.value = true
-                    refreshJobs()
-                } else {
-                    _error.value = "Ошибка удаления места работы"
-                }
+                jobRepository.deleteJob(jobId)
+                loadUserJobs(userId)
             } catch (e: Exception) {
-                _error.value = "Ошибка удаления места работы: ${e.message}"
+                _error.value = e.message
             }
         }
     }
 
     fun clearError() {
         _error.value = null
-    }
-
-    fun clearCreated() {
-        _isCreated.value = false
-    }
-
-    fun clearDeleted() {
-        _isDeleted.value = false
     }
 }

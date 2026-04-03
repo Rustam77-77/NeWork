@@ -1,130 +1,117 @@
 package ru.netology.nework.data.repository
 
-import android.util.Log
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.firstOrNull
 import ru.netology.nework.api.ApiService
 import ru.netology.nework.data.database.dao.PostDao
-import ru.netology.nework.data.database.entities.PostEntity
 import ru.netology.nework.data.database.entities.toEntity
 import ru.netology.nework.data.database.entities.toModel
 import ru.netology.nework.dto.Post
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val TAG = "PostRepository"
-
 @Singleton
 class PostRepository @Inject constructor(
     private val postDao: PostDao,
     private val apiService: ApiService
 ) {
-    fun getAllPosts(): Flow<List<Post>> =
-        postDao.getAllPosts().map { entities ->
-            entities.map { it.toModel() }
-        }
 
-    fun getPostById(postId: Long): Flow<Post?> =
-        postDao.getPostById(postId).map { entity ->
-            entity?.toModel()
-        }
-
-    suspend fun refreshPosts() {
-        try {
-            Log.d(TAG, "refreshPosts: starting network request")
-            val response = apiService.getAllPosts()
-            Log.d(TAG, "refreshPosts: response code = ${response.code()}")
-
+    suspend fun getAllPosts(): List<Post> {
+        return try {
+            val response = apiService.getAllPosts("")
             if (response.isSuccessful) {
                 response.body()?.let { posts ->
-                    Log.d(TAG, "refreshPosts: received ${posts.size} posts from server")
-
-                    posts.forEach { post ->
-                        Log.d(TAG, "Post: id=${post.id}, author=${post.author}")
-                    }
-
-                    val entities = posts.map { it.toEntity() }
-                    postDao.insertAll(entities)
-                    Log.d(TAG, "refreshPosts: saved ${entities.size} posts to DB")
-                } ?: run {
-                    Log.e(TAG, "refreshPosts: response body is null")
-                }
+                    postDao.insertAll(posts.map { it.toEntity() })
+                    posts
+                } ?: emptyList()
             } else {
-                Log.e(TAG, "refreshPosts: error response ${response.code()}")
+                val postsFlow = postDao.getAll()
+                postsFlow.firstOrNull()?.map { it.toModel() } ?: emptyList()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "refreshPosts: exception", e)
+            val postsFlow = postDao.getAll()
+            postsFlow.firstOrNull()?.map { it.toModel() } ?: emptyList()
         }
     }
 
-    suspend fun likePost(postId: Long): Post? {
+    suspend fun getPostById(id: Long): Post? {
         return try {
-            Log.d(TAG, "likePost: postId=$postId")
-            val response = apiService.likePost(postId)
+            val response = apiService.getPostById("", id)
             if (response.isSuccessful) {
                 response.body()?.also { post ->
                     postDao.insert(post.toEntity())
                 }
             } else {
-                null
+                postDao.getById(id)?.toModel()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "likePost: exception", e)
+            postDao.getById(id)?.toModel()
+        }
+    }
+
+    suspend fun refreshPosts() {
+        try {
+            val response = apiService.getAllPosts("")
+            if (response.isSuccessful) {
+                response.body()?.let { posts ->
+                    postDao.insertAll(posts.map { it.toEntity() })
+                }
+            }
+        } catch (e: Exception) {
+            // Обработка ошибки
+        }
+    }
+
+    suspend fun likePost(id: Long): Post? {
+        return try {
+            val response = apiService.likePost("", id)
+            if (response.isSuccessful) {
+                response.body()?.also { post ->
+                    postDao.insert(post.toEntity())
+                }
+            } else null
+        } catch (e: Exception) {
             null
         }
     }
 
-    suspend fun unlikePost(postId: Long): Post? {
+    suspend fun unlikePost(id: Long): Post? {
         return try {
-            Log.d(TAG, "unlikePost: postId=$postId")
-            val response = apiService.unlikePost(postId)
+            val response = apiService.unlikePost("", id)
             if (response.isSuccessful) {
                 response.body()?.also { post ->
                     postDao.insert(post.toEntity())
                 }
-            } else {
-                null
-            }
+            } else null
         } catch (e: Exception) {
-            Log.e(TAG, "unlikePost: exception", e)
             null
         }
     }
 
     suspend fun savePost(post: Post): Post? {
         return try {
-            Log.d(TAG, "savePost: postId=${post.id}")
             val response = if (post.id == 0L) {
-                apiService.createPost(post)
+                apiService.createPost("", post)
             } else {
-                apiService.updatePost(post.id, post)
+                apiService.updatePost("", post.id, post)
             }
-
             if (response.isSuccessful) {
-                response.body()?.also { updatedPost ->
-                    postDao.insert(updatedPost.toEntity())
+                response.body()?.also { newPost ->
+                    postDao.insert(newPost.toEntity())
                 }
-            } else {
-                null
-            }
+            } else null
         } catch (e: Exception) {
-            Log.e(TAG, "savePost: exception", e)
             null
         }
     }
 
-    suspend fun deletePost(postId: Long): Boolean {
+    suspend fun deletePost(id: Long): Boolean {
         return try {
-            Log.d(TAG, "deletePost: postId=$postId")
-            val response = apiService.deletePost(postId)
+            val response = apiService.deletePost("", id)
             if (response.isSuccessful) {
-                postDao.deleteById(postId)
+                postDao.deleteById(id)
                 true
-            } else {
-                false
-            }
+            } else false
         } catch (e: Exception) {
-            Log.e(TAG, "deletePost: exception", e)
             false
         }
     }

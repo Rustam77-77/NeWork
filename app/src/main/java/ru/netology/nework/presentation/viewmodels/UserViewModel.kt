@@ -1,5 +1,6 @@
 package ru.netology.nework.presentation.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -18,31 +19,32 @@ class UserViewModel @Inject constructor(
     private val _users = MutableLiveData<List<User>>(emptyList())
     val users: LiveData<List<User>> = _users
 
-    private val _selectedUser = MutableLiveData<User?>()
-    val selectedUser: LiveData<User?> = _selectedUser
+    private val _user = MutableLiveData<User?>()
+    val user: LiveData<User?> = _user
 
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
-    private val _isRefreshing = MutableLiveData(false)
-    val isRefreshing: LiveData<Boolean> = _isRefreshing
-
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
+    companion object {
+        private const val TAG = "UserViewModel"
+    }
+
     init {
         loadUsers()
-        refreshUsers()
     }
 
     fun loadUsers() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                userRepository.getAllUsers().collect { userList ->
-                    _users.value = userList
-                }
+                val usersList = userRepository.getAllUsers()
+                _users.value = usersList
+                Log.d(TAG, "Loaded ${usersList.size} users")
             } catch (e: Exception) {
+                Log.e(TAG, "Error loading users", e)
                 _error.value = "Ошибка загрузки пользователей: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -54,10 +56,11 @@ class UserViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                userRepository.getUserById(userId).collect { user ->
-                    _selectedUser.value = user
-                }
+                val userItem = userRepository.getUserById(userId)
+                _user.value = userItem
+                Log.d(TAG, "Loaded user with id: $userId")
             } catch (e: Exception) {
+                Log.e(TAG, "Error loading user", e)
                 _error.value = "Ошибка загрузки пользователя: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -67,13 +70,14 @@ class UserViewModel @Inject constructor(
 
     fun refreshUsers() {
         viewModelScope.launch {
-            _isRefreshing.value = true
             try {
                 userRepository.refreshUsers()
+                val usersList = userRepository.getAllUsers()
+                _users.value = usersList
+                Log.d(TAG, "Users refreshed")
             } catch (e: Exception) {
+                Log.e(TAG, "Error refreshing users", e)
                 _error.value = "Ошибка обновления пользователей: ${e.message}"
-            } finally {
-                _isRefreshing.value = false
             }
         }
     }

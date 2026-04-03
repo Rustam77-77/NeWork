@@ -10,6 +10,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import ru.netology.nework.BuildConfig
 import ru.netology.nework.api.ApiService
 import ru.netology.nework.utils.InstantAdapter
 import java.time.Instant
@@ -32,7 +33,22 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideApiKeyInterceptor(): ApiKeyInterceptor {
+        return ApiKeyInterceptor()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthInterceptor(
+        tokenManager: ru.netology.nework.data.repository.TokenManager
+    ): AuthInterceptor {
+        return AuthInterceptor(tokenManager)
+    }
+
+    @Provides
+    @Singleton
     fun provideOkHttpClient(
+        apiKeyInterceptor: ApiKeyInterceptor,
         authInterceptor: AuthInterceptor
     ): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -43,8 +59,9 @@ object NetworkModule {
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(apiKeyInterceptor)  // API_KEY добавляется первым
+            .addInterceptor(authInterceptor)     // Токен авторизации
             .addInterceptor(loggingInterceptor)
-            .addInterceptor(authInterceptor)
             .build()
     }
 

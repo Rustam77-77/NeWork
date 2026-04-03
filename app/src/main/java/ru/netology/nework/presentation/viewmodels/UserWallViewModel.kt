@@ -24,50 +24,17 @@ class UserWallViewModel @Inject constructor(
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
-    private var currentUserId: Long = 0
-
     fun loadUserPosts(userId: Long) {
-        currentUserId = userId
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                postRepository.getAllPosts().collect { allPosts ->
-                    val userPosts = allPosts.filter { it.authorId == userId }
-                    _posts.value = userPosts
-                }
+                val allPosts = postRepository.getAllPosts()
+                val userPosts = allPosts.filter { it.authorId == userId }
+                _posts.value = userPosts
             } catch (e: Exception) {
-                _error.value = "Ошибка загрузки постов пользователя: ${e.message}"
+                _error.value = e.message
             } finally {
                 _isLoading.value = false
-            }
-        }
-    }
-
-    fun refreshUserPosts() {
-        if (currentUserId != 0L) {
-            viewModelScope.launch {
-                try {
-                    postRepository.refreshPosts()
-                } catch (e: Exception) {
-                    _error.value = "Ошибка обновления постов: ${e.message}"
-                }
-            }
-        }
-    }
-
-    fun likePost(post: Post) {
-        viewModelScope.launch {
-            try {
-                val updatedPost = if (post.likedByMe) {
-                    postRepository.unlikePost(post.id)
-                } else {
-                    postRepository.likePost(post.id)
-                }
-                if (updatedPost != null) {
-                    refreshUserPosts()
-                }
-            } catch (e: Exception) {
-                _error.value = "Ошибка при лайке поста"
             }
         }
     }

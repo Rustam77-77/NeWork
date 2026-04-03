@@ -4,15 +4,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentUserWallBinding
+import ru.netology.nework.dto.Post
 import ru.netology.nework.presentation.adapters.PostAdapter
-import ru.netology.nework.presentation.viewmodels.AuthViewModel
+import ru.netology.nework.presentation.viewmodels.PostViewModel
 import ru.netology.nework.presentation.viewmodels.UserWallViewModel
 
 @AndroidEntryPoint
@@ -21,11 +25,21 @@ class UserWallFragment : Fragment() {
     private var _binding: FragmentUserWallBinding? = null
     private val binding get() = _binding!!
 
-    private val wallViewModel: UserWallViewModel by viewModels()
-    private val authViewModel: AuthViewModel by viewModels()
+    private val userWallViewModel: UserWallViewModel by viewModels()
+    private val postViewModel: PostViewModel by viewModels()
 
     private lateinit var postAdapter: PostAdapter
     private var userId: Long = 0
+
+    companion object {
+        fun newInstance(userId: Long): UserWallFragment {
+            val fragment = UserWallFragment()
+            val args = Bundle()
+            args.putLong("userId", userId)
+            fragment.arguments = args
+            return fragment
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,78 +53,71 @@ class UserWallFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupToolbar()
+
         arguments?.let {
             userId = it.getLong("userId", 0)
         }
 
-        setupObservers()
-        initAdapter()
         setupRecyclerView()
+        setupObservers()
 
-        wallViewModel.loadUserPosts(userId)
+        if (userId != 0L) {
+            userWallViewModel.loadUserPosts(userId)
+        }
     }
 
-    private fun initAdapter() {
-        // Получаем текущее значение или null
-        val currentUserId = authViewModel.currentUserId.value
+    private fun setupToolbar() {
+        (activity as? AppCompatActivity)?.setSupportActionBar(binding.toolbar)
+        (activity as? AppCompatActivity)?.supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setDisplayShowHomeEnabled(true)
+            title = "Посты пользователя"
+        }
 
-        postAdapter = PostAdapter(
-            onItemClickListener = { /* Не переходим в детали на стене */ },
-            onLikeClickListener = { post -> wallViewModel.likePost(post) },
-            onMenuClickListener = { _, _ -> },
-            currentUserId = currentUserId
-        )
-
-        binding.recyclerView.adapter = postAdapter
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
     }
 
     private fun setupRecyclerView() {
-        binding.recyclerView.apply {
+        postAdapter = PostAdapter(
+            onItemClickListener = { post -> openPostDetail(post) },
+            onLikeClickListener = { post -> postViewModel.likePost(post) },
+            onMenuClickListener = { _, _ -> },
+            currentUserId = null
+        )
+        binding.postsRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            // adapter устанавливается в initAdapter()
+            adapter = postAdapter
         }
     }
 
     private fun setupObservers() {
-        wallViewModel.posts.observe(viewLifecycleOwner) { posts ->
+        userWallViewModel.posts.observe(viewLifecycleOwner) { posts ->
             postAdapter.submitList(posts)
-            binding.emptyState.isVisible = posts.isEmpty()
-            binding.progressBar.isVisible = false
+            binding.postsRecyclerView.isVisible = posts.isNotEmpty()
+            binding.emptyText.isVisible = posts.isEmpty()
         }
 
-        wallViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+        userWallViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.isVisible = isLoading
         }
 
-        wallViewModel.error.observe(viewLifecycleOwner) { error ->
+        userWallViewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
-                wallViewModel.clearError()
-                binding.progressBar.isVisible = false
+                userWallViewModel.clearError()
             }
-        }
-
-        // Обновляем адаптер при изменении текущего пользователя
-        authViewModel.currentUserId.observe(viewLifecycleOwner) { userId ->
-            postAdapter = PostAdapter(
-                onItemClickListener = { /* Не переходим в детали на стене */ },
-                onLikeClickListener = { post -> wallViewModel.likePost(post) },
-                onMenuClickListener = { _, _ -> },
-                currentUserId = userId
-            )
-            binding.recyclerView.adapter = postAdapter
-            postAdapter.submitList(wallViewModel.posts.value)
         }
     }
 
-    companion object {
-        fun newInstance(userId: Long): UserWallFragment {
-            val fragment = UserWallFragment()
-            val args = Bundle()
-            args.putLong("userId", userId)
-            fragment.arguments = args
-            return fragment
-        }
+    private fun openPostDetail(post: Post) {
+        // Используем общую навигацию к PostDetailFragment
+        findNavController().navigate(
+            R.id.postDetailFragment,
+            Bundle().apply { putLong("postId", post.id) }
+        )
     }
 
     override fun onDestroyView() {

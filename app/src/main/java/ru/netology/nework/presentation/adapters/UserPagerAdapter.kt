@@ -1,14 +1,17 @@
 package ru.netology.nework.presentation.adapters
 
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import ru.netology.nework.presentation.fragments.UserJobsFragment
 import ru.netology.nework.presentation.fragments.UserWallFragment
 
 class UserPagerAdapter(
-    fragment: Fragment,
+    fragmentManager: FragmentManager,
+    lifecycle: Lifecycle,
     private val userId: Long
-) : FragmentStateAdapter(fragment) {
+) : FragmentStateAdapter(fragmentManager, lifecycle) {
 
     override fun getItemCount(): Int = 2
 

@@ -4,17 +4,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
+import ru.netology.nework.R
 import ru.netology.nework.databinding.FragmentUserJobsBinding
 import ru.netology.nework.dto.Job
 import ru.netology.nework.presentation.adapters.JobAdapter
 import ru.netology.nework.presentation.viewmodels.UserJobsViewModel
+import java.time.Instant
 
 @AndroidEntryPoint
 class UserJobsFragment : Fragment() {
@@ -22,10 +27,20 @@ class UserJobsFragment : Fragment() {
     private var _binding: FragmentUserJobsBinding? = null
     private val binding get() = _binding!!
 
-    private val jobsViewModel: UserJobsViewModel by viewModels()
+    private val userJobsViewModel: UserJobsViewModel by viewModels()
 
     private lateinit var jobAdapter: JobAdapter
     private var userId: Long = 0
+
+    companion object {
+        fun newInstance(userId: Long): UserJobsFragment {
+            val fragment = UserJobsFragment()
+            val args = Bundle()
+            args.putLong("userId", userId)
+            fragment.arguments = args
+            return fragment
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,73 +54,139 @@ class UserJobsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupToolbar()
+
         arguments?.let {
             userId = it.getLong("userId", 0)
         }
 
-        initAdapter()
         setupRecyclerView()
         setupObservers()
+        setupListeners()
 
-        jobsViewModel.loadJobsForUser(userId)
+        if (userId != 0L) {
+            userJobsViewModel.loadUserJobs(userId)
+        }
     }
 
-    private fun initAdapter() {
-        jobAdapter = JobAdapter { job -> showDeleteJobDialog(job) }
+    private fun setupToolbar() {
+        (activity as? AppCompatActivity)?.setSupportActionBar(binding.toolbar)
+        (activity as? AppCompatActivity)?.supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setDisplayShowHomeEnabled(true)
+            title = "Места работы"
+        }
+
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
     }
 
     private fun setupRecyclerView() {
-        binding.recyclerView.apply {
+        jobAdapter = JobAdapter { job ->
+            showJobMenuDialog(job)
+        }
+        binding.jobsRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = jobAdapter
         }
     }
 
     private fun setupObservers() {
-        jobsViewModel.jobs.observe(viewLifecycleOwner) { jobs ->
+        userJobsViewModel.jobs.observe(viewLifecycleOwner) { jobs ->
             jobAdapter.submitList(jobs)
-            binding.emptyState.isVisible = jobs.isEmpty()
-            binding.progressBar.isVisible = false
+            binding.jobsRecyclerView.isVisible = jobs.isNotEmpty()
+            binding.emptyText.isVisible = jobs.isEmpty()
         }
 
-        jobsViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+        userJobsViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.isVisible = isLoading
         }
 
-        jobsViewModel.error.observe(viewLifecycleOwner) { error ->
+        userJobsViewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
-                jobsViewModel.clearError()
-            }
-        }
-
-        jobsViewModel.isDeleted.observe(viewLifecycleOwner) { isDeleted ->
-            if (isDeleted) {
-                jobsViewModel.refreshJobs()
-                jobsViewModel.clearDeleted()
+                userJobsViewModel.clearError()
             }
         }
     }
 
-    private fun showDeleteJobDialog(job: Job) {
+    private fun setupListeners() {
+        binding.fabAdd.setOnClickListener {
+            showCreateJobDialog()
+        }
+    }
+
+    private fun showCreateJobDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_create_job, null)
+        val nameInput = dialogView.findViewById<TextInputEditText>(R.id.jobNameInput)
+        val positionInput = dialogView.findViewById<TextInputEditText>(R.id.jobPositionInput)
+
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Удаление места работы")
-            .setMessage("Вы уверены, что хотите удалить это место работы?")
-            .setPositiveButton("Удалить") { _, _ ->
-                jobsViewModel.deleteJob(job.id)
+            .setTitle("Добавить место работы")
+            .setView(dialogView)
+            .setPositiveButton("Сохранить") { _, _ ->
+                val name = nameInput?.text.toString()
+                val position = positionInput?.text.toString()
+                if (name.isNotBlank() && position.isNotBlank()) {
+                    userJobsViewModel.createJob(
+                        userId = userId,
+                        name = name,
+                        position = position,
+                        start = Instant.now()
+                    )
+                } else {
+                    Snackbar.make(binding.root, "Заполните все поля", Snackbar.LENGTH_SHORT).show()
+                }
             }
             .setNegativeButton("Отмена", null)
             .show()
     }
 
-    companion object {
-        fun newInstance(userId: Long): UserJobsFragment {
-            val fragment = UserJobsFragment()
-            val args = Bundle()
-            args.putLong("userId", userId)
-            fragment.arguments = args
-            return fragment
-        }
+    private fun showJobMenuDialog(job: Job) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Действия")
+            .setItems(arrayOf("Редактировать", "Удалить")) { _, which ->
+                when (which) {
+                    0 -> showEditJobDialog(job)
+                    1 -> showDeleteConfirmationDialog(job)
+                }
+            }
+            .show()
+    }
+
+    private fun showEditJobDialog(job: Job) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_create_job, null)
+        val nameInput = dialogView.findViewById<TextInputEditText>(R.id.jobNameInput)
+        val positionInput = dialogView.findViewById<TextInputEditText>(R.id.jobPositionInput)
+
+        nameInput?.setText(job.name)
+        positionInput?.setText(job.position)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Редактировать место работы")
+            .setView(dialogView)
+            .setPositiveButton("Сохранить") { _, _ ->
+                val name = nameInput?.text.toString()
+                val position = positionInput?.text.toString()
+                if (name.isNotBlank() && position.isNotBlank()) {
+                    // TODO: Реализовать обновление работы
+                    userJobsViewModel.loadUserJobs(userId)
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun showDeleteConfirmationDialog(job: Job) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Удаление")
+            .setMessage("Вы уверены, что хотите удалить это место работы?")
+            .setPositiveButton("Удалить") { _, _ ->
+                userJobsViewModel.deleteJob(job.id, userId)
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     override fun onDestroyView() {

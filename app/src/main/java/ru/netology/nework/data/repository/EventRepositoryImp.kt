@@ -33,7 +33,7 @@ class EventRepositoryImpl @Inject constructor(
 
     override suspend fun refreshEvents() {
         try {
-            val response = apiService.getAllEvents()
+            val response = apiService.getAllEvents("")
             if (response.isSuccessful) {
                 response.body()?.let { events ->
                     eventDao.insertAll(events.map { it.toEntity() })
@@ -46,7 +46,7 @@ class EventRepositoryImpl @Inject constructor(
 
     override suspend fun likeEvent(id: Long): Event? {
         return try {
-            val response = apiService.likeEvent(id)
+            val response = apiService.likeEvent("", id)
             if (response.isSuccessful) {
                 response.body()?.also { event ->
                     eventDao.insert(event.toEntity())
@@ -59,7 +59,7 @@ class EventRepositoryImpl @Inject constructor(
 
     override suspend fun unlikeEvent(id: Long): Event? {
         return try {
-            val response = apiService.unlikeEvent(id)
+            val response = apiService.unlikeEvent("", id)
             if (response.isSuccessful) {
                 response.body()?.also { event ->
                     eventDao.insert(event.toEntity())
@@ -73,9 +73,9 @@ class EventRepositoryImpl @Inject constructor(
     override suspend fun saveEvent(event: Event): Event? {
         return try {
             val response = if (event.id == 0L) {
-                apiService.createEvent(event)
+                apiService.createEvent("", event)
             } else {
-                apiService.updateEvent(event.id, event)
+                apiService.updateEvent("", event.id, event)
             }
             if (response.isSuccessful) {
                 response.body()?.also { newEvent ->
@@ -89,7 +89,7 @@ class EventRepositoryImpl @Inject constructor(
 
     override suspend fun deleteEvent(id: Long): Boolean {
         return try {
-            val response = apiService.deleteEvent(id)
+            val response = apiService.deleteEvent("", id)
             if (response.isSuccessful) {
                 eventDao.deleteById(id)
                 true

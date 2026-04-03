@@ -1,5 +1,6 @@
 package ru.netology.nework.presentation.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -26,6 +27,10 @@ class AuthViewModel @Inject constructor(
     private val _currentUserId = MutableLiveData<Long?>()
     val currentUserId: LiveData<Long?> = _currentUserId
 
+    companion object {
+        private const val TAG = "AuthViewModel"
+    }
+
     init {
         checkAuthStatus()
     }
@@ -33,20 +38,26 @@ class AuthViewModel @Inject constructor(
     private fun checkAuthStatus() {
         _isAuthenticated.value = authRepository.isAuthenticated()
         _currentUserId.value = authRepository.currentUserId
+        Log.d(TAG, "Auth status: ${_isAuthenticated.value}")
     }
 
     fun login(login: String, password: String) {
         viewModelScope.launch {
             _isLoading.value = true
+            Log.d(TAG, "Login attempt for: $login")
             try {
                 val result = authRepository.login(login, password)
                 if (result.isSuccess) {
                     _isAuthenticated.value = true
                     _currentUserId.value = result.getOrNull()?.userId
+                    Log.d(TAG, "Login successful for: $login")
                 } else {
-                    _error.value = "Неправильный логин или пароль"
+                    val error = result.exceptionOrNull()
+                    _error.value = error?.message ?: "Неправильный логин или пароль"
+                    Log.e(TAG, "Login failed: ${error?.message}")
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Login error", e)
                 _error.value = "Ошибка входа: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -62,15 +73,20 @@ class AuthViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isLoading.value = true
+            Log.d(TAG, "Register attempt for: $login")
             try {
                 val result = authRepository.register(login, name, password)
                 if (result.isSuccess) {
                     _isAuthenticated.value = true
                     _currentUserId.value = result.getOrNull()?.userId
+                    Log.d(TAG, "Register successful for: $login")
                 } else {
-                    _error.value = "Пользователь с таким логином уже зарегистрирован"
+                    val error = result.exceptionOrNull()
+                    _error.value = error?.message ?: "Пользователь с таким логином уже зарегистрирован"
+                    Log.e(TAG, "Register failed: ${error?.message}")
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Register error", e)
                 _error.value = "Ошибка регистрации: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -82,6 +98,7 @@ class AuthViewModel @Inject constructor(
         authRepository.logout()
         _isAuthenticated.value = false
         _currentUserId.value = null
+        Log.d(TAG, "Logged out")
     }
 
     fun clearError() {

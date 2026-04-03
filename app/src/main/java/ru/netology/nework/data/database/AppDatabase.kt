@@ -13,7 +13,7 @@ import ru.netology.nework.data.database.entities.*
         UserEntity::class,
         JobEntity::class
     ],
-    version = 1,
+    version = 2,  // Увеличьте версию с 1 на 2
     exportSchema = false
 )
 @TypeConverters(Converters::class)
