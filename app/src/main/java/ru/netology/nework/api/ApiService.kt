@@ -10,7 +10,6 @@ interface ApiService {
     @FormUrlEncoded
     @POST("api/users/authentication")
     suspend fun login(
-        @Header("API-KEY") apiKey: String,
         @Field("login") login: String,
         @Field("pass") password: String
     ): Response<AuthResponse>
@@ -18,7 +17,6 @@ interface ApiService {
     @FormUrlEncoded
     @POST("api/users/registration")
     suspend fun register(
-        @Header("API-KEY") apiKey: String,
         @Field("login") login: String,
         @Field("name") name: String,
         @Field("pass") password: String
@@ -26,118 +24,65 @@ interface ApiService {
 
     // ==================== Posts ====================
     @GET("api/posts")
-    suspend fun getAllPosts(
-        @Header("API-KEY") apiKey: String
-    ): Response<List<Post>>
+    suspend fun getAllPosts(): Response<List<Post>>
 
     @GET("api/posts/{id}")
-    suspend fun getPostById(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long
-    ): Response<Post>
+    suspend fun getPostById(@Path("id") id: Long): Response<Post>
 
     @POST("api/posts")
-    suspend fun createPost(
-        @Header("API-KEY") apiKey: String,
-        @Body post: Post
-    ): Response<Post>
+    suspend fun createPost(@Body post: Post): Response<Post>
 
     @PUT("api/posts/{id}")
-    suspend fun updatePost(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long,
-        @Body post: Post
-    ): Response<Post>
+    suspend fun updatePost(@Path("id") id: Long, @Body post: Post): Response<Post>
 
     @DELETE("api/posts/{id}")
-    suspend fun deletePost(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long
-    ): Response<Unit>
+    suspend fun deletePost(@Path("id") id: Long): Response<Unit>
 
     @POST("api/posts/{id}/likes")
-    suspend fun likePost(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long
-    ): Response<Post>
+    suspend fun likePost(@Path("id") id: Long): Response<Post>
 
     @DELETE("api/posts/{id}/likes")
-    suspend fun unlikePost(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long
-    ): Response<Post>
+    suspend fun unlikePost(@Path("id") id: Long): Response<Post>
 
     // ==================== Events ====================
     @GET("api/events")
-    suspend fun getAllEvents(
-        @Header("API-KEY") apiKey: String
-    ): Response<List<Event>>
+    suspend fun getAllEvents(): Response<List<Event>>
 
     @GET("api/events/{id}")
-    suspend fun getEventById(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long
-    ): Response<Event>
+    suspend fun getEventById(@Path("id") id: Long): Response<Event>
 
     @POST("api/events")
-    suspend fun createEvent(
-        @Header("API-KEY") apiKey: String,
-        @Body event: Event
-    ): Response<Event>
+    suspend fun createEvent(@Body event: Event): Response<Event>
 
     @PUT("api/events/{id}")
-    suspend fun updateEvent(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long,
-        @Body event: Event
-    ): Response<Event>
+    suspend fun updateEvent(@Path("id") id: Long, @Body event: Event): Response<Event>
 
     @DELETE("api/events/{id}")
-    suspend fun deleteEvent(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long
-    ): Response<Unit>
+    suspend fun deleteEvent(@Path("id") id: Long): Response<Unit>
 
     @POST("api/events/{id}/likes")
-    suspend fun likeEvent(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long
-    ): Response<Event>
+    suspend fun likeEvent(@Path("id") id: Long): Response<Event>
 
     @DELETE("api/events/{id}/likes")
-    suspend fun unlikeEvent(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long
-    ): Response<Event>
+    suspend fun unlikeEvent(@Path("id") id: Long): Response<Event>
 
     // ==================== Users ====================
     @GET("api/users")
-    suspend fun getAllUsers(
-        @Header("API-KEY") apiKey: String
-    ): Response<List<User>>
+    suspend fun getAllUsers(): Response<List<User>>
 
     @GET("api/users/{id}")
-    suspend fun getUserById(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long
-    ): Response<User>
+    suspend fun getUserById(@Path("id") id: Long): Response<User>
 
     // ==================== Jobs ====================
     @GET("api/users/{userId}/jobs")
-    suspend fun getJobsForUser(
-        @Header("API-KEY") apiKey: String,
-        @Path("userId") userId: Long
-    ): Response<List<Job>>
+    suspend fun getJobsForUser(@Path("userId") userId: Long): Response<List<Job>>
 
     @POST("api/jobs")
-    suspend fun createJob(
-        @Header("API-KEY") apiKey: String,
-        @Body job: Job
-    ): Response<Job>
+    suspend fun createJob(@Body job: Job): Response<Job>
+
+    @PUT("api/jobs/{id}")
+    suspend fun updateJob(@Path("id") id: Long, @Body job: Job): Response<Job>
 
     @DELETE("api/jobs/{id}")
-    suspend fun deleteJob(
-        @Header("API-KEY") apiKey: String,
-        @Path("id") id: Long
-    ): Response<Unit>
+    suspend fun deleteJob(@Path("id") id: Long): Response<Unit>
 }

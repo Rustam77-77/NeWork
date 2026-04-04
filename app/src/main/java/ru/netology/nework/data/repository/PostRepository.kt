@@ -17,7 +17,7 @@ class PostRepository @Inject constructor(
 
     suspend fun getAllPosts(): List<Post> {
         return try {
-            val response = apiService.getAllPosts("")
+            val response = apiService.getAllPosts()
             if (response.isSuccessful) {
                 response.body()?.let { posts ->
                     postDao.insertAll(posts.map { it.toEntity() })
@@ -35,7 +35,7 @@ class PostRepository @Inject constructor(
 
     suspend fun getPostById(id: Long): Post? {
         return try {
-            val response = apiService.getPostById("", id)
+            val response = apiService.getPostById(id)
             if (response.isSuccessful) {
                 response.body()?.also { post ->
                     postDao.insert(post.toEntity())
@@ -50,7 +50,7 @@ class PostRepository @Inject constructor(
 
     suspend fun refreshPosts() {
         try {
-            val response = apiService.getAllPosts("")
+            val response = apiService.getAllPosts()
             if (response.isSuccessful) {
                 response.body()?.let { posts ->
                     postDao.insertAll(posts.map { it.toEntity() })
@@ -63,7 +63,7 @@ class PostRepository @Inject constructor(
 
     suspend fun likePost(id: Long): Post? {
         return try {
-            val response = apiService.likePost("", id)
+            val response = apiService.likePost(id)
             if (response.isSuccessful) {
                 response.body()?.also { post ->
                     postDao.insert(post.toEntity())
@@ -76,7 +76,7 @@ class PostRepository @Inject constructor(
 
     suspend fun unlikePost(id: Long): Post? {
         return try {
-            val response = apiService.unlikePost("", id)
+            val response = apiService.unlikePost(id)
             if (response.isSuccessful) {
                 response.body()?.also { post ->
                     postDao.insert(post.toEntity())
@@ -90,9 +90,9 @@ class PostRepository @Inject constructor(
     suspend fun savePost(post: Post): Post? {
         return try {
             val response = if (post.id == 0L) {
-                apiService.createPost("", post)
+                apiService.createPost(post)
             } else {
-                apiService.updatePost("", post.id, post)
+                apiService.updatePost(post.id, post)
             }
             if (response.isSuccessful) {
                 response.body()?.also { newPost ->
@@ -106,7 +106,7 @@ class PostRepository @Inject constructor(
 
     suspend fun deletePost(id: Long): Boolean {
         return try {
-            val response = apiService.deletePost("", id)
+            val response = apiService.deletePost(id)
             if (response.isSuccessful) {
                 postDao.deleteById(id)
                 true

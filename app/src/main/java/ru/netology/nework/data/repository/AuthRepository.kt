@@ -26,8 +26,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun login(login: String, password: String): Result<AuthResponse> {
         return try {
-            // API_KEY теперь добавляется автоматически через ApiKeyInterceptor
-            val response = apiService.login("", login, password)
+            val response = apiService.login(login, password)
             if (response.isSuccessful) {
                 response.body()?.let { authResponse ->
                     tokenManager.saveToken(authResponse.token)
@@ -45,7 +44,7 @@ class AuthRepository @Inject constructor(
 
     suspend fun register(login: String, name: String, password: String): Result<AuthResponse> {
         return try {
-            val response = apiService.register("", login, name, password)
+            val response = apiService.register(login, name, password)
             if (response.isSuccessful) {
                 response.body()?.let { authResponse ->
                     tokenManager.saveToken(authResponse.token)

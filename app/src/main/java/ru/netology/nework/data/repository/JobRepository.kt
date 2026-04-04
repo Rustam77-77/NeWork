@@ -17,7 +17,7 @@ class JobRepository @Inject constructor(
 
     suspend fun getJobsForUser(userId: Long): List<Job> {
         return try {
-            val response = apiService.getJobsForUser("", userId)
+            val response = apiService.getJobsForUser(userId)
             if (response.isSuccessful) {
                 response.body()?.let { jobs ->
                     jobDao.insertAll(jobs.map { it.toEntity() })
@@ -35,7 +35,7 @@ class JobRepository @Inject constructor(
 
     suspend fun createJob(job: Job): Job? {
         return try {
-            val response = apiService.createJob("", job)
+            val response = apiService.createJob(job)
             if (response.isSuccessful) {
                 response.body()?.also { newJob ->
                     jobDao.insert(newJob.toEntity())
@@ -46,9 +46,22 @@ class JobRepository @Inject constructor(
         }
     }
 
+    suspend fun updateJob(job: Job): Job? {
+        return try {
+            val response = apiService.updateJob(job.id, job)
+            if (response.isSuccessful) {
+                response.body()?.also { updatedJob ->
+                    jobDao.insert(updatedJob.toEntity())
+                }
+            } else null
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     suspend fun deleteJob(id: Long): Boolean {
         return try {
-            val response = apiService.deleteJob("", id)
+            val response = apiService.deleteJob(id)
             if (response.isSuccessful) {
                 jobDao.deleteById(id)
                 true
@@ -60,7 +73,7 @@ class JobRepository @Inject constructor(
 
     suspend fun refreshJobs(userId: Long) {
         try {
-            val response = apiService.getJobsForUser("", userId)
+            val response = apiService.getJobsForUser(userId)
             if (response.isSuccessful) {
                 response.body()?.let { jobs ->
                     jobDao.insertAll(jobs.map { it.toEntity() })

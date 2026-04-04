@@ -17,7 +17,7 @@ class UserRepository @Inject constructor(
 
     suspend fun getAllUsers(): List<User> {
         return try {
-            val response = apiService.getAllUsers("")
+            val response = apiService.getAllUsers()
             if (response.isSuccessful) {
                 response.body()?.let { users ->
                     userDao.insertAll(users.map { it.toEntity() })
@@ -35,7 +35,7 @@ class UserRepository @Inject constructor(
 
     suspend fun getUserById(id: Long): User? {
         return try {
-            val response = apiService.getUserById("", id)
+            val response = apiService.getUserById(id)
             if (response.isSuccessful) {
                 response.body()?.also { user ->
                     userDao.insert(user.toEntity())
@@ -50,7 +50,7 @@ class UserRepository @Inject constructor(
 
     suspend fun refreshUsers() {
         try {
-            val response = apiService.getAllUsers("")
+            val response = apiService.getAllUsers()
             if (response.isSuccessful) {
                 response.body()?.let { users ->
                     userDao.insertAll(users.map { it.toEntity() })
